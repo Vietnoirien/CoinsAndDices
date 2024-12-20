@@ -2,71 +2,146 @@ import wx
 import math
 import json
 from char_edit import CharacterEditor
+from monster_edit import MonsterEditor
 import os
 
 class HexagonalGrid(wx.Frame):
     def __init__(self):
+        # Calcul de la taille de la fenêtre basée sur l'écran
         screen = wx.Display().GetGeometry()
         window_width = int(screen.width * 0.8)
         window_height = int(screen.height * 0.8)
-        
+    
         super().__init__(parent=None, title='Grille Hexagonale', size=(window_width, window_height))
-        
+
+        # Définition des dimensions de la grille
         self.grid_width = 13
         self.grid_height = 14
-        
+
+        # Calcul initial de la taille des hexagones
         self.calculate_hex_size()
-        
+
+        # Création du panneau principal avec un sizer horizontal
         self.panel = wx.Panel(self)
-        
-        self.biomes = {
-            "Marais": {"primary": wx.Colour(0, 100, 100), "pattern": None},
-            "Plaine": {"primary": wx.Colour(144, 238, 144), "pattern": None},
-            "Riviere": {
-                "primary": wx.Colour(144, 238, 144),
-                "pattern": {"color": wx.Colour(0, 0, 255), "type": "line"}
-            },
-            "Colline": {"primary": wx.Colour(165, 113, 78), "pattern": None},
-            "Route": {
-                "primary": wx.Colour(144, 238, 144),
-                "pattern": {"color": wx.Colour(139, 69, 19), "type": "line"}
-            },
-            "Montagne": {"primary": wx.Colour(101, 67, 33), "pattern": None},
-            "Ville": {"primary": wx.Colour(128, 128, 128), "pattern": None},
-            "Foret": {"primary": wx.Colour(0, 100, 0), "pattern": None}
-        }
-        
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Canvas pour la grille hexagonale (partie gauche)
         self.canvas = wx.Panel(self.panel)
         self.canvas.SetBackgroundColour(wx.WHITE)
         self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         self.canvas.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.canvas.Bind(wx.EVT_RIGHT_DOWN, self.on_right_click)
-        
+
+        # Panneau droit avec gestion proportionnelle
+        right_panel = wx.Panel(self.panel)
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # Création des éditeurs
+        self.char_editor = CharacterEditor(right_panel)
+        self.monster_editor = MonsterEditor(right_panel)
+
+        # Panneau de boutons
+        self.buttons_panel = wx.Panel(right_panel)
+        buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Création et configuration des boutons
+        self.char_button = wx.Button(self.buttons_panel, label="Créer un personnage")
+        self.monster_button = wx.Button(self.buttons_panel, label="Créer un monstre")
+        self.char_button.Enable(True)
+        self.monster_button.Enable(True)        
+        self.char_button.Bind(wx.EVT_BUTTON, self.show_char_editor)
+        self.monster_button.Bind(wx.EVT_BUTTON, self.show_monster_editor)
+
+
+        # Ajout des boutons avec expansion
+        buttons_sizer.Add(self.char_button, 1, wx.ALL|wx.EXPAND, 5)
+        buttons_sizer.Add(self.monster_button, 1, wx.ALL|wx.EXPAND, 5)
+        self.buttons_panel.SetSizer(buttons_sizer)
+
+        # Configuration du panneau droit avec proportions
+        right_sizer.Add(self.buttons_panel, 0, wx.EXPAND|wx.ALL|wx.GROW, 5)
+        right_sizer.Add(self.char_editor, 1, wx.EXPAND|wx.ALL|wx.GROW, 5)
+        right_sizer.Add(self.monster_editor, 1, wx.EXPAND|wx.ALL|wx.GROW, 5)
+        right_panel.SetSizer(right_sizer)
+
+        # Configuration du sizer principal avec ratio 60/40
+        main_sizer.Add(self.canvas, 3, wx.EXPAND|wx.ALL|wx.GROW, 5)
+        main_sizer.Add(right_panel, 2, wx.EXPAND|wx.ALL|wx.GROW, 5)
+        self.panel.SetSizer(main_sizer)
+
+        # État initial des éditeurs
+        self.char_editor.Hide()
+        self.monster_editor.Hide()
+
+        # Stockage de la référence au panneau droit
+        self.right_panel = right_panel
+
+        self.biomes = {
+        "Marais": {"primary": wx.Colour(0, 100, 100), "pattern": None},
+        "Plaine": {"primary": wx.Colour(144, 238, 144), "pattern": None},
+        "Riviere": {
+            "primary": wx.Colour(144, 238, 144),
+            "pattern": {"color": wx.Colour(0, 0, 255), "type": "line"}
+        },
+        "Colline": {"primary": wx.Colour(165, 113, 78), "pattern": None},
+        "Route": {
+            "primary": wx.Colour(144, 238, 144),
+            "pattern": {"color": wx.Colour(139, 69, 19), "type": "line"}
+        },
+        "Montagne": {"primary": wx.Colour(101, 67, 33), "pattern": None},
+        "Ville": {"primary": wx.Colour(128, 128, 128), "pattern": None},
+        "Foret": {"primary": wx.Colour(0, 100, 0), "pattern": None}
+        }
+
         self.hex_biomes = {}
         self.last_clicked_hex = None
-        
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.canvas, 1, wx.EXPAND)
-        
-        self.create_char_button = wx.Button(self.panel, label="Créer personnage")
-        self.create_char_button.Bind(wx.EVT_BUTTON, self.on_create_character)
-        sizer.Add(self.create_char_button, 0, wx.ALL, 5)
-        
-        self.panel.SetSizer(sizer)
-        
-        self.Bind(wx.EVT_SIZE, self.on_resize)
-        
+        self.Bind(wx.EVT_SIZE, self.on_resize)        
+        self.ensure_directory_structure()
         self.load_biomes()
         self.Center()
         self.Show()
 
-    def on_create_character(self, event):
-        char_editor = CharacterEditor()
+    def show_char_editor(self, event):
+        self.buttons_panel.Hide()
+        self.char_editor.Show()
+        self.buttons_panel.Disable()  # Désactive les boutons pendant l'édition
+        self.char_editor.init_panel.Hide()
+        self.char_editor.editor_panel.Show()
+        self.monster_editor.Hide()
+        self.Layout()
+        self.force_layout()
 
+    def show_monster_editor(self, event):
+        self.buttons_panel.Hide()
+        self.buttons_panel.Disable()  # Désactive les boutons pendant l'édition
+        self.monster_editor.Show()
+        self.monster_editor.init_panel.Hide()
+        self.monster_editor.editor_panel.Show()
+        self.char_editor.Hide()
+        self.Layout()
+        self.force_layout()
+
+    def rebind_buttons(self):
+        self.char_button.Bind(wx.EVT_BUTTON, self.show_char_editor)
+        self.monster_button.Bind(wx.EVT_BUTTON, self.show_monster_editor)
+
+    def force_layout(self):
+            self.panel.Layout()
+            self.panel.GetChildren()[1].Layout()  # Accès au panneau droit via les enfants
+            self.char_editor.Layout()
+            self.monster_editor.Layout()
+            self.Refresh()
+        
     def calculate_hex_size(self):
         width, height = self.GetSize()
-        max_width = (width - 50) / (self.grid_width * 1.5)
+        # Ajuster la largeur disponible en tenant compte du ratio 60/40
+        available_width = width * 0.6  # 60% de la largeur pour la grille
+        
+        # Calcul des dimensions maximales possibles pour un hexagone
+        max_width = (available_width - 50) / (self.grid_width * 1.5)
         max_height = (height - 50) / (self.grid_height * math.sqrt(3))
+        
+        # Prendre la plus petite valeur pour garantir que les hexagones rentrent dans l'espace
         self.hex_size = min(max_width, max_height)
 
     def get_hex_center(self, col, row):
@@ -282,3 +357,27 @@ class HexagonalGrid(wx.Frame):
         self.calculate_hex_size()
         self.canvas.Refresh()
         event.Skip()
+
+    def ensure_directory_structure(self):
+        """
+        Assure que tous les répertoires nécessaires existent
+        """
+        base_dirs = [
+            'Runelimit',
+            'Runelimit/characters',
+            'Runelimit/monsters',
+            'Runelimit/monsters/class_1',
+            'Runelimit/monsters/class_2',
+            'Runelimit/monsters/class_3',
+            'Runelimit/monsters/class_4'
+        ]
+        for directory in base_dirs:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
+    def force_layout(self):
+        self.panel.Layout()
+        self.right_panel.Layout()
+        self.char_editor.Layout()
+        self.monster_editor.Layout()
+        self.Refresh()
