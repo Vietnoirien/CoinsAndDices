@@ -1,0 +1,40 @@
+{
+  "RUNEBOUND": {
+    "faces": 6,
+    "values": [
+      "Marais, Rivière",
+      "Montagne, Plaine, Route",
+      "Rivière, Fôret",
+      "Route, Plaine, Colline",
+      "Route, Rivière",
+      "Route, Plaine, Colline"
+    ]
+  },
+  "FFFFFrdfdf": {
+    "faces": 15,
+    "values": [
+      "dgdg",
+      "gdfg",
+      "dfgddd",
+      "gfdsd",
+      "dfgjhkl",
+      "fjhgd",
+      "fdhgjkkllmmmmmù",
+      "qgqgf",
+      "gdhhjfgsdfsdgsfdsgd",
+      "gfdgdfgdfgdfgdfgdfgdfgdf",
+      "iuouyi",
+      "ryzcvbcb",
+      "vcbcvbyryrydfbcv",
+      ":hjdger",
+      "'\"('tfdgj,"
+    ]
+  },
+  "Pièce": {
+    "faces": 2,
+    "values": [
+      "PILE",
+      "FACE"
+    ]
+  }
+}

@@ -352,7 +352,7 @@ class HomePage(wx.Frame):
             ("Dés Standards", "Lancez des dés classiques avec notation NdX", self.open_dice_frame),
             ("Pièces", "Simulez des lancers de pièces", self.open_coins),
             ("Dés Personnalisés", "Créez et utilisez vos propres dés", self.open_custom_dice),
-            ("Dés Runebound", "Dés spéciaux pour Runebound", self.open_runebound)
+            ("Dés Runebound", "Dés spéciaux pour Runebound", self.open_runebound),
         ]
         
         # Création des boutons avec leurs descriptions
@@ -381,7 +381,7 @@ class HomePage(wx.Frame):
         self.panel.SetSizer(main_sizer)
         self.Center()
         self.Show()
-
+        
     def open_dice_frame(self, event):
         self.Hide()
         frame = StandardDiceFrame()
@@ -520,7 +520,9 @@ class RuneboundFrame(wx.Frame):
             ["Route", "Plaine", "Colline"]
         ]
         
-        self.dice_count = wx.SpinCtrl(self.panel, min=1, max=10, initial=1)
+        self.rerolls_used = set()
+        
+        self.dice_count = wx.SpinCtrl(self.panel, min=1, max=5, initial=5)
         dice_sizer = wx.BoxSizer(wx.HORIZONTAL)
         dice_sizer.Add(wx.StaticText(self.panel, label="Nombre de dés:"), 0, wx.ALL|wx.CENTER, 5)
         dice_sizer.Add(self.dice_count, 0, wx.ALL, 5)
@@ -530,22 +532,111 @@ class RuneboundFrame(wx.Frame):
         roll_btn.Bind(wx.EVT_BUTTON, self.on_roll_dice)
         main_sizer.Add(roll_btn, 0, wx.ALL|wx.CENTER, 5)
         
-        self.result_text = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE|wx.TE_READONLY, size=(700, 400))
-        main_sizer.Add(self.result_text, 1, wx.EXPAND|wx.ALL, 5)
+        self.scroll = wx.ScrolledWindow(self.panel)
+        self.scroll.SetScrollRate(0, 20)
+        self.scroll_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.scroll.SetSizer(self.scroll_sizer)
+        main_sizer.Add(self.scroll, 1, wx.EXPAND|wx.ALL, 5)
+        
+        self.dice_panels = []
         
         self.panel.SetSizer(main_sizer)
         self.Center()
         self.Show()
 
+    def create_dice_panel(self, index):
+        dice_panel = wx.Panel(self.scroll)
+        dice_panel.index = index
+        dice_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        face = random.choice(self.faces)
+        dice_panel.current_face = face
+        
+        dice_btn = wx.Button(dice_panel, label=f"Dé {index+1}")
+        dice_btn.SetBackgroundColour(wx.WHITE)
+        
+        reroll_btn = wx.Button(dice_panel, label="↻")
+        reroll_btn.dice_index = index
+        if index in self.rerolls_used:
+            reroll_btn.SetBackgroundColour(wx.LIGHT_GREY)
+            reroll_btn.SetForegroundColour(wx.BLACK)
+            reroll_btn.Disable()
+        else:
+            reroll_btn.SetBackgroundColour(wx.BLUE)
+            reroll_btn.SetForegroundColour(wx.WHITE)
+        
+        def on_reroll(event):
+            btn = event.GetEventObject()
+            if btn.dice_index not in self.rerolls_used:
+                self.rerolls_used.add(btn.dice_index)
+                btn.SetBackgroundColour(wx.LIGHT_GREY)
+                btn.SetForegroundColour(wx.BLACK)
+                btn.Disable()
+                self.reroll_single_die(btn.dice_index)
+        
+        reroll_btn.Bind(wx.EVT_BUTTON, on_reroll)
+        
+        def create_dice_handler(dice_button, face_buttons):
+            def on_dice_click(event):
+                current_color = dice_button.GetBackgroundColour()
+                if current_color == wx.RED:
+                    dice_button.SetBackgroundColour(wx.WHITE)
+                    for btn in face_buttons:
+                        btn.Enable(True)
+                else:
+                    dice_button.SetBackgroundColour(wx.RED)
+                    for btn in face_buttons:
+                        btn.SetBackgroundColour(wx.WHITE)
+                        btn.Enable(False)
+                dice_panel.Layout()
+            return on_dice_click
+        
+        buttons = []
+        for element in face:
+            btn = wx.Button(dice_panel, label=element)
+            btn.SetBackgroundColour(wx.WHITE)
+            buttons.append(btn)
+            
+            def create_face_handler(current_buttons, clicked_button, dice_button):
+                def on_click(event):
+                    if not dice_button.GetBackgroundColour() == wx.RED:
+                        for button in current_buttons:
+                            button.SetBackgroundColour(wx.WHITE)
+                        clicked_button.SetBackgroundColour(wx.GREEN)
+                        dice_panel.Layout()
+                return on_click
+            
+            btn.Bind(wx.EVT_BUTTON, create_face_handler(buttons, btn, dice_btn))
+            dice_sizer.Add(btn, 0, wx.ALL, 5)
+        
+        dice_btn.Bind(wx.EVT_BUTTON, create_dice_handler(dice_btn, buttons))
+        dice_sizer.Insert(0, dice_btn, 0, wx.ALL|wx.CENTER, 5)
+        dice_sizer.Add(reroll_btn, 0, wx.ALL|wx.CENTER, 5)
+        
+        dice_panel.SetSizer(dice_sizer)
+        return dice_panel
+
+    def reroll_single_die(self, index):
+        new_panel = self.create_dice_panel(index)
+        self.scroll_sizer.Replace(self.dice_panels[index], new_panel)
+        self.dice_panels[index].Destroy()
+        self.dice_panels[index] = new_panel
+        self.scroll_sizer.Layout()
+        self.scroll.FitInside()
+
     def on_roll_dice(self, event):
+        self.rerolls_used.clear()
+        self.scroll_sizer.Clear(True)
+        self.dice_panels.clear()
+        
         num_dice = self.dice_count.GetValue()
-        results = []
-        
         for i in range(num_dice):
-            face = random.choice(self.faces)
-            results.append(f"Dé {i+1}: {', '.join(face)}")
+            dice_panel = self.create_dice_panel(i)
+            self.dice_panels.append(dice_panel)
+            self.scroll_sizer.Add(dice_panel, 0, wx.EXPAND|wx.ALL, 5)
         
-        self.result_text.SetValue("\n".join(results))
+        self.scroll_sizer.Layout()
+        self.scroll.FitInside()
 
 def main():
     app = wx.App()
@@ -554,3 +645,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
