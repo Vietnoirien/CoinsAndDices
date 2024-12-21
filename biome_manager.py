@@ -1,11 +1,15 @@
 import json
 import os
 import wx
+import logging
+from datetime import datetime
 
 class BiomeManager:
     def __init__(self, hex_manager):
+        self.setup_logger()
         self.hex_manager = hex_manager
         self.hex_biomes = {}
+        self.connection_counts = {}
         self.biomes = {
             "Marais": {"primary": wx.Colour(0, 100, 100), "pattern": None},
             "Plaine": {"primary": wx.Colour(144, 238, 144), "pattern": None},
@@ -24,6 +28,16 @@ class BiomeManager:
         }
         self.load_biomes()
         
+    def setup_logger(self):
+        os.makedirs('Runelimit/logs', exist_ok=True)
+        self.logger = logging.getLogger('BiomeManager')
+        self.logger.setLevel(logging.DEBUG)
+        fh = logging.FileHandler('Runelimit/logs/biome.log')
+        fh.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
+
     def set_biome(self, hex_pos, biome):
         col, row = hex_pos
         if not (0 <= col < self.hex_manager.grid_width and 0 <= row < self.hex_manager.grid_height):
@@ -40,17 +54,54 @@ class BiomeManager:
     def get_biome_data(self, biome_name):
         return self.biomes.get(biome_name)
 
+    def get_connection_count(self, hex_pos):
+        return self.connection_counts.get(str(hex_pos), 0)
+
+    def update_connection_count(self, hex_pos):
+        self.logger.info(f"Updating connections for hex {hex_pos}")
+        pos_str = str(hex_pos)
+        old_count = self.connection_counts.get(pos_str, 0)
+        
+        connected_positions = self.get_connected_biomes(hex_pos)
+        self.logger.debug(f"Connected positions: {connected_positions}")
+        
+        new_count = len(connected_positions)
+        self.connection_counts[pos_str] = new_count
+        self.logger.debug(f"Connection count changed for {pos_str}: {old_count} -> {new_count}")
+        
+        for connected_pos in connected_positions:
+            connected_str = str(connected_pos)
+            if connected_str not in self.connection_counts:
+                self.connection_counts[connected_str] = 0
+            self.connection_counts[connected_str] += 1
+            self.logger.debug(f"Updated connected hex {connected_str} count: {self.connection_counts[connected_str]}")
+        
+        self.save_biomes()
+
     def save_biomes(self):
         os.makedirs('Runelimit', exist_ok=True)
+        data = {
+            'biomes': self.hex_biomes,
+            'connections': self.connection_counts
+        }
+        self.logger.debug(f"Saving biome state: {json.dumps(data, indent=2)}")
         with open('Runelimit/biomes.json', 'w') as f:
-            json.dump(self.hex_biomes, f)
+            json.dump(data, f)
 
     def load_biomes(self):
         try:
             with open('Runelimit/biomes.json', 'r') as f:
-                self.hex_biomes = json.load(f)
-        except FileNotFoundError:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    self.hex_biomes = data.get('biomes', {})
+                    self.verify_connection_counts()
+                else:
+                    self.hex_biomes = {}
+                    self.connection_counts = {}
+        except (FileNotFoundError, json.JSONDecodeError):
             self.hex_biomes = {}
+            self.connection_counts = {}
+            self.save_biomes()
 
     def should_connect(self, biome1, biome2):
         if not biome1 or not biome2:
@@ -73,5 +124,54 @@ class BiomeManager:
         for neighbor in neighbors:
             neighbor_biome = self.get_biome(neighbor)
             if self.should_connect(current_biome, neighbor_biome):
+                if current_biome == "Riviere" and self.get_connection_count(neighbor) >= 2:
+                    continue
                 connected.append(neighbor)
         return connected
+
+    def create_context_menu(self, parent):
+        menu = wx.Menu()
+        for biome in self.biomes.keys():
+            item = menu.Append(-1, biome)
+            parent.Bind(wx.EVT_MENU, lambda evt, b=biome: self.set_biome_with_refresh(evt, b), item)
+        return menu
+
+    def set_biome_with_refresh(self, event, biome_name):
+        if self.hex_manager.last_clicked_hex:
+            current_pos = self.hex_manager.last_clicked_hex
+            old_biome = self.get_biome(current_pos)
+            
+            self.clear_connections(current_pos)
+            self.set_biome(current_pos, biome_name)
+            
+            if biome_name == "Riviere":
+                valid_connections = self.hex_manager.find_river_connections(*current_pos)
+                self.establish_connections(current_pos, valid_connections)
+            
+            self.hex_manager.canvas.Refresh()
+
+    def clear_connections(self, hex_pos):
+        connected = self.get_connected_biomes(hex_pos)
+        self.connection_counts[str(hex_pos)] = 0
+        for connected_pos in connected:
+            conn_str = str(connected_pos)
+            if conn_str in self.connection_counts:
+                self.connection_counts[conn_str] = max(0, self.connection_counts[conn_str] - 1)
+
+    def establish_connections(self, source_pos, target_positions):
+        source_str = str(source_pos)
+        self.connection_counts[source_str] = len(target_positions)
+        
+        for target_pos in target_positions:
+            target_str = str(target_pos)
+            if target_str not in self.connection_counts:
+                self.connection_counts[target_str] = 0
+            self.connection_counts[target_str] += 1
+
+    def verify_connection_counts(self):
+        self.connection_counts = {}
+        for hex_pos_str, biome in self.hex_biomes.items():
+            if biome == "Riviere":
+                hex_pos = eval(hex_pos_str)
+                self.update_connection_count(hex_pos)
+        self.save_biomes()

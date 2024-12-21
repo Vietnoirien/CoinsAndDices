@@ -70,6 +70,7 @@ class HexagonalGrid(wx.Frame):
 
         # Initialize managers and bindings
         self.right_panel = right_panel
+        self.hex_manager.canvas = self.canvas
         self.biome_manager = BiomeManager(self.hex_manager)
         self.hex_manager.set_biome_manager(self.biome_manager)
         self.last_clicked_hex = None
@@ -81,26 +82,20 @@ class HexagonalGrid(wx.Frame):
 
     def calculate_hex_size(self):
         width, height = self.GetSize()
-        # Add padding to account for the bottom line
-        canvas_height = height - 40  # Reduce usable height to create bottom padding
-        canvas_width = width - 40   # Add some horizontal padding as well
+        canvas_width = width * 0.6  # Adjust for right panel
+        canvas_height = height - 40
         
-        self.hex_manager.calculate_hex_size(canvas_width, canvas_height)
-
-    def should_connect(self, biome1, biome2):
-        return self.biome_manager.should_connect(biome1, biome2)
-
-    def create_context_menu(self):
-        menu = wx.Menu()
-        for biome in self.biome_manager.biomes.keys():
-            item = menu.Append(-1, biome)
-            self.Bind(wx.EVT_MENU, lambda evt, b=biome: self.set_biome(evt, b), item)
-        return menu
-
-    def set_biome(self, event, biome_name):
-        if self.last_clicked_hex:
-            self.biome_manager.set_biome(self.last_clicked_hex, biome_name)
-            self.canvas.Refresh()
+        # Add margins to ensure hexes don't touch window edges
+        margin = 40
+        usable_width = canvas_width - (2 * margin)
+        usable_height = canvas_height - (2 * margin)
+        
+        # Calculate hex size accounting for full hex height including points
+        width_based_size = usable_width / (self.grid_width * 1.5)
+        height_based_size = usable_height / ((self.grid_height + 0.5) * math.sqrt(3))
+        
+        # Use the smaller value to ensure hexes fit both dimensions
+        self.hex_manager.hex_size = min(width_based_size, height_based_size)
 
     def on_paint(self, event):
         dc = wx.PaintDC(self.canvas)
@@ -137,14 +132,14 @@ class HexagonalGrid(wx.Frame):
         pos = event.GetPosition()
         hex_pos = self.hex_manager.get_clicked_hex(pos.x, pos.y)
         if hex_pos:
-            self.last_clicked_hex = hex_pos
+            self.hex_manager.last_clicked_hex = hex_pos  # Updated
             self.canvas.Refresh()
 
     def on_right_click(self, event):
         pos = event.GetPosition()
         hex_pos = self.hex_manager.get_clicked_hex(pos.x, pos.y)
         if hex_pos:
-            self.last_clicked_hex = hex_pos
-            menu = self.create_context_menu()
+            self.hex_manager.last_clicked_hex = hex_pos  # Updated
+            menu = self.biome_manager.create_context_menu(self)
             self.canvas.PopupMenu(menu)
             menu.Destroy()
