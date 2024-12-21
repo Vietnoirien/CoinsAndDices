@@ -7,44 +7,21 @@ class CharacterEditor(wx.Panel):
         super().__init__(parent=parent)
         
         self.main_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.main_sizer)
-        
-        # Panel initialization
-        self.init_panel = wx.Panel(self)
-        self.editor_panel = wx.Panel(self)
-        
-        self.main_sizer.Add(self.init_panel, 1, wx.EXPAND|wx.ALL|wx.GROW, 10)
-        self.main_sizer.Add(self.editor_panel, 1, wx.EXPAND|wx.ALL|wx.GROW, 10)
         
         # Editor panel configuration
+        self.editor_panel = wx.Panel(self)
         self.editor_sizer = wx.BoxSizer(wx.VERTICAL)
         self.editor_panel.SetSizer(self.editor_sizer)
         
         # Character selector setup
         self.setup_char_selector()
         
-        # Directory structure check
-        self.ensure_directory_structure()
+        # Fields setup
+        self.setup_fields()
         
-        # Fields definition with default values
-        self.fields = {
-            'name': ('Nom', wx.TextCtrl),
-            'level': ('Niveau', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=1)),
-            'exp': ('Expérience', lambda p: wx.SpinCtrl(p, min=0, max=10000, initial=0)),
-            'gold': ('Or', lambda p: wx.SpinCtrl(p, min=0, max=10000, initial=3)),
-            'pv': ('Points de Vie', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=4)),
-            'fatigue': ('Fatigue', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=3)),
-            'distance': ('Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'distance_degat': ('Dégâts Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'melee': ('Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'melee_degat': ('Dégâts Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'magie': ('Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'magie_degat': ('Dégâts Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0))
-        }
-        
-        self.controls = {}
-        self.create_fields()
-        self.create_buttons()
+        # Add editor panel to main sizer with expansion
+        self.main_sizer.Add(self.editor_panel, 1, wx.EXPAND|wx.ALL, 5)
+        self.SetSizer(self.main_sizer)
         
         # Initial state
         self.editor_panel.Hide()
@@ -63,10 +40,6 @@ class CharacterEditor(wx.Panel):
         
         char_select_panel.SetSizer(char_select_sizer)
         self.editor_sizer.Add(char_select_panel, 0, wx.EXPAND|wx.ALL, 5)
-        
-        # Bindings
-        self.char_choice.Bind(wx.EVT_CHOICE, self.on_character_selected)
-        new_char_btn.Bind(wx.EVT_BUTTON, self.on_new_character)
 
     def create_fields(self):
         self.scroll_window = wx.ScrolledWindow(self.editor_panel)
@@ -178,3 +151,27 @@ class CharacterEditor(wx.Panel):
                 control.SetValue("")
             else:
                 control.SetValue(control.GetMin())
+
+    def setup_fields(self):
+        # Directory structure check
+        self.ensure_directory_structure()
+        
+        # Fields definition with default values
+        self.fields = {
+            'name': ('Nom', wx.TextCtrl),
+            'level': ('Niveau', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=1)),
+            'exp': ('Expérience', lambda p: wx.SpinCtrl(p, min=0, max=10000, initial=0)),
+            'gold': ('Or', lambda p: wx.SpinCtrl(p, min=0, max=10000, initial=3)),
+            'pv': ('Points de Vie', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=4)),
+            'fatigue': ('Fatigue', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=3)),
+            'distance': ('Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'distance_degat': ('Dégâts Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'melee': ('Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'melee_degat': ('Dégâts Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'magie': ('Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'magie_degat': ('Dégâts Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0))
+        }
+        
+        self.controls = {}
+        self.create_fields()
+        self.create_buttons()

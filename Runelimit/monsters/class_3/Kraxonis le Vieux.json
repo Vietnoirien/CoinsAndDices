@@ -1,0 +1,14 @@
+{
+  "name": "Kraxonis le Vieux",
+  "health": 5,
+  "description": "Kraxonis se réveille d'un repos de plusieurs siècles.",
+  "distance": 12,
+  "distance_degat": 2,
+  "melee": 14,
+  "melee_degat": 2,
+  "magie": 18,
+  "magie_degat": 4,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

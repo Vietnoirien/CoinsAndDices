@@ -1,0 +1,14 @@
+{
+  "name": "Loups de la Nuit",
+  "health": 2,
+  "description": "La nuit tombe et vous entendez le hurlement de loups qui s'approchent. Si vous réussissez à grimper sur la colline, vous pourrez échapper aux prédateurs.",
+  "distance": 10,
+  "distance_degat": 0,
+  "melee": 14,
+  "melee_degat": 1,
+  "magie": 10,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

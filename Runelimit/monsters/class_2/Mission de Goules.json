@@ -1,0 +1,14 @@
+{
+  "name": "Mission de Goules",
+  "health": 4,
+  "description": "Vous tombez sur un séide de Vorakesh qui augmente la légion du sombre seigneur en vidant un cimetière.",
+  "distance": 14,
+  "distance_degat": 0,
+  "melee": 10,
+  "melee_degat": 1,
+  "magie": 16,
+  "magie_degat": 3,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

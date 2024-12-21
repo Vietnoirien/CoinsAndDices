@@ -1,1 +1,1 @@
-{"biomes": {"(0, 0)": "Riviere", "(1, 0)": "Riviere", "(1, 1)": "Riviere", "(1, 2)": "Riviere"}, "connections": {"(0, 0)": 2, "(1, 0)": 2, "(1, 1)": 0, "(1, 2)": 0}}
+{"biomes": {"(8, 4)": "Riviere", "(7, 4)": "Plaine", "(7, 5)": "Plaine", "(7, 7)": "Riviere", "(7, 6)": "Riviere", "(8, 5)": "Plaine", "(7, 3)": "Riviere", "(8, 3)": "Riviere", "(9, 4)": "Riviere"}, "connections": {"(8, 4)": 2, "(9, 4)": 1, "(8, 3)": 2, "(7, 7)": 2, "(7, 6)": 1, "(7, 3)": 2}}

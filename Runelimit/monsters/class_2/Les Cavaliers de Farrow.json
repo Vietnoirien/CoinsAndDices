@@ -1,0 +1,14 @@
+{
+  "name": "Les Cavaliers de Farrow",
+  "health": 4,
+  "description": "Les éclaireurs de Sir Farrow sont plus rapides et plus mortels que n'importe quelle créature. Mais si vous agissez rapidement vous pourrez les surprendre.",
+  "distance": 16,
+  "distance_degat": 1,
+  "melee": 13,
+  "melee_degat": 3,
+  "magie": 11,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

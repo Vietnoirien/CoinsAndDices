@@ -1,0 +1,14 @@
+{
+  "name": "Les Morts Affamés",
+  "health": 3,
+  "description": "Dans leurs efforts pour ouvrir les portes de la mort, les serviteurs de Margath ont réveillé de nombreuses âmes.",
+  "distance": 11,
+  "distance_degat": 1,
+  "melee": 13,
+  "melee_degat": 2,
+  "magie": 16,
+  "magie_degat": 1,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

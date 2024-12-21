@@ -1,0 +1,14 @@
+{
+  "name": "Repère du Rakkon",
+  "health": 2,
+  "description": "Vous connaissez les histoires sur la redoutable bête Rakkon, qui fait son nid sur une île au centre d'un lac. A la pleine lune, le Rakkon fait des raids sur les autochtones pour piller l'or, la nourriture et les enfants.",
+  "distance": 12,
+  "distance_degat": 0,
+  "melee": 13,
+  "melee_degat": 2,
+  "magie": 9,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

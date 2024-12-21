@@ -9,12 +9,6 @@ class HexManager:
     CANVAS_WIDTH_RATIO = 0.6  # 60% of window width
     GRID_MARGIN = 50
     
-    NEIGHBOR_DIRECTIONS = [
-        (-1, -1), (0, -1), (1, -1),
-        (-1, 0),           (1, 0),
-        (-1, 1),  (0, 1),  (1, 1)
-    ]
-    
     FLOW_PRIORITIES = {
         (0, 1): 1,     # South
         (1, 0): 2,     # East
@@ -95,19 +89,27 @@ class HexManager:
 
     def get_neighbors(self, col: int, row: int) -> List[Tuple[int, int]]:
         neighbors = []
-        odd_col = col % 2
+        # Pour une grille hexagonale décalée (odd-q offset)
+        if col % 2 == 0:  # Colonne paire
+            directions = [
+                (-1, 0),   # Gauche
+                (1, 0),    # Droite
+                (0, -1),   # Haut
+                (-1, 1),   # Bas-gauche
+                (0, 1),    # Bas
+                (1, -1),   # Haut-droite
+            ]
+        else:  # Colonne impaire
+            directions = [
+                (-1, 0),   # Gauche
+                (1, 0),    # Droite
+                (-1, -1),  # Haut-gauche
+                (0, -1),   # Haut
+                (0, 1),    # Bas
+                (1, 1),    # Bas-droite
+            ]
         
-        # These are the only valid adjacent positions in a hex grid
-        adjacent_offsets = [
-            (-1, 0),  # Left
-            (1, 0),   # Right
-            (0, -1),  # Up
-            (0, 1),   # Down
-            (-1, odd_col - 1),  # Upper left
-            (1, odd_col - 1),   # Upper right
-        ]
-        
-        for dx, dy in adjacent_offsets:
+        for dx, dy in directions:
             new_col, new_row = col + dx, row + dy
             if 0 <= new_col < self.grid_width and 0 <= new_row < self.grid_height:
                 neighbors.append((new_col, new_row))
@@ -176,20 +178,16 @@ class HexManager:
         valid_neighbors = []
         current_pos = (col, row)
     
-        # Check if this hex is on the edge
         if self.is_edge_tile(col, row):
-            # Check if any adjacent river already connects to this edge
             edge_sides = self.get_edge_sides(col, row)
             for adj_pos in self.get_neighbors(col, row):
                 adj_col, adj_row = adj_pos
                 adj_biome = self.biome_manager.get_biome(adj_pos)
                 if adj_biome == "Riviere":
-                    # If adjacent river is on same edge, skip this hex's edge connection
                     if any(side in self.get_edge_sides(adj_col, adj_row) for side in edge_sides):
-                        edge_sides = []  # Remove edge connection possibility
+                        edge_sides = []
                         break
     
-        # Rest of the connection logic...
         for adj_pos in self.get_neighbors(col, row):
             adj_col, adj_row = adj_pos
             adj_biome = self.biome_manager.get_biome(adj_pos)
@@ -197,11 +195,10 @@ class HexManager:
             if adj_biome in ["Marais", "Riviere", "Ville"]:
                 if self.biome_manager.get_connection_count(adj_pos) < self.MAX_RIVER_CONNECTIONS:
                     position = self.get_relative_position(col, row, adj_col, adj_row)
-                    # Only allow edge connection if we still have valid edge_sides
                     if self.is_edge_tile(col, row):
                         relative_side = self.get_position_side(position)
                         if relative_side in edge_sides:
-                            priority = 1  # Give edge connection high priority
+                            priority = 1
                             valid_neighbors.append((adj_pos, priority))
                             continue
                 

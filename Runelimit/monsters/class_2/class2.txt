@@ -1,0 +1,280 @@
+Les Légions de Farrow
+
+4
+
+*Vorakesh a besoin d'armées pour préparer la venue de Margath. Il est retourné sur les anciens champs de bataille où il ressuscite les morts tombés pendant la Guerre des Dragons. Ces morts-vivants marchent maintenant sous la bannière de Sir Farrow.*
+
+Récompense: recevez 4.
+
+12/1
+15/3
+12/0
+
+---------------
+
+Les Cavaliers de Farrow
+
+4
+
+*Les éclaireurs de Sir Farrow sont plus rapides et plus mortels que n'importe quelle créature. Mais si vous agissez rapidement vous pourrez les surprendre.*
+
+Avant le Combat: testez Se Cacher (15).
+
+Si vous réussissez, commencez le premier round de combat avec la phase de votre choix (distance, mêlée, ou magie).
+
+Récompense: recevez 4.
+
+16/1
+13/3
+11/0
+
+------------
+
+Lord Vorakesh
+
+3
+
+*Le nécromancien fou Lord Vorakesh avec l'aide de ses suivants cherche à ressusciter Margath, le Grand Seigneur Dragon depuis longtemps disparu.*
+
+Toutes les Phases: pour chaque
+
+que Vorakesh inflige, il inflige aussi 1.
+
+Récompense: recevez 2 et piochez une carte marché. Prenez cette carte gratuitement si c'est un Artéfact, sinon défaussez la.
+
+13/1
+13/1
+16/3
+
+-------------
+
+Les Morts Affamés
+
+3
+
+*Dans leurs efforts pour ouvrir les portes de la mort, les serviteurs de Margath ont réveillé de nombreuses âmes.*
+
+Toutes les Phases: pour chaque que les Morts Affamés infligent, défaussez 1 des Morts Affamés.
+
+Récompense: recevez 3.
+
+11/1
+13/2
+16/1
+
+----------------
+
+Ferrox Sauvage
+
+3
+
+*Vous tombez sur un Ferrox défendant sa nourriture. Vous ne pouvez pas le raisonner, car son esprit est consumé par sa soif de sang. Vous devez le combattre.*
+
+Récompense: recevez 3.
+
+14/0
+14/4
+11/0
+
+-------------
+
+Couvée de la Mère de Sang
+
+3
+
+*La brume s'écarte pour révéler la mystique Mere de Sang, une créature monstrueuse qui nourrit les Ferrox en échange des proies qu'ils lui amènent.*
+
+Avant le Combat: testez Nager (14)
+
+pour trouver son cœur. Si vous échouez, prenez 1
+
+Récompense: recevez 3 et prenez cette carte. Vous pouvez défausser cette carte avant de bouger pour défausser 1 de votre Héros.
+
+15/0
+11/1
+14/2
+
+--------------
+
+Sir Farrow le Påle
+
+4
+
+*Sir Farrow ne dit rien quand il apparut devant vous dans la pénombre, mais on voyait dans ses yeux la promesse de la mort.*
+
+Mêlée : le dégât de mêlée de Farrow est X, X étant le round actuel de combat (1 au premier round, 2 au deuxième, etc.).
+
+Récompense: recevez 4.
+
+13/0
+15/x
+12/1
+
+-------------
+
+Embuscade de Ferrox
+
+3
+
+*Avec un grognement puissant, un Ferrox sauvage vous atterrit dessus ! La créature est une masse confuse; elle bouge trop vite pour être vue.*
+
+Récompense: recevez 3.
+
+15/3
+12/1
+11/0
+
+-----------------
+
+Lady Vorakesh
+
+3
+
+*Tandis que son mari utilisait les pouvoirs d'un nécromancien, Lady Vorakesh utilisait les siens.*
+
+Avant le Combat: testez
+
+Résister (13). Si vous échouez, prenez 3.
+
+Récompense: recevez 1 et prenez cette carte. Vous pouvez défausser cette carte pour réduire le coût d'un Allié de 2 (minimum 0).
+
+14/1
+11/0
+15/3
+
+---------------
+
+Zombies en Liberté
+
+4
+
+*Toutes les abominations en liberté dans le pays ne sont pas au service de Margath ou de Vorakesh. Elles doivent néanmoins être traduites devant la justice.*
+
+Avant le Combat: testez (14). Si vous
+
+réussissez, gagnez +2 à votre premier jet d'attaque.
+
+Récompense: recevez 4.
+
+15/0
+14/3
+11/0
+
+-----------------
+
+Horde de Squelettes
+
+3
+
+Mêlée: si vous ratez un jet de combat de
+
+mêlée, les squelettes commencent à vous submerger, et vous recevez une pénalité de - 2 à tous vos jets d'attaque ultérieurs pour ce combat. Cette pénalité se cumule avec chaque échec de jet de combat de mêlée.
+
+Récompense: recevez 3.
+
+12/0
+13/3
+15/0
+
+---------------
+
+Ferrox en Patrouille
+
+3
+
+*Un Ferrox rôde sur les toits des habitations et vous devez l'arrêter avant qu'il ne tue à nouveau.*
+
+Avant le Combat: testez Grimper (13)
+
+pour chasser le Ferrox. Si vous réussissez, le dégât de mêlée du Ferrox est de 0 pour le premier round de combat.
+
+Récompense: recevez 3.
+
+13/1
+16/3
+11/0
+
+----------------
+
+Sir Vyleen le Déchu
+
+4
+
+*Dans la vie, Sir Vyleen était le garde du corps de Vorakesh. Dans la mort, c'est son confident et son assassin.*
+
+Magie: une attaque magique réussie contre Sir Vyleen inflige 1 supplémentaire.
+
+Récompense: recevez 4.
+
+12/2
+16/3
+10/0
+
+----------------
+
+Partie de Chasse
+
+4
+
+*Les limiers sont les meilleurs pour traquer leur proie, mais ils ne valent pas les goules pour les tuer.*
+
+Récompense: recevez 4.
+
+14/0
+17/3
+12/0
+
+---------------
+
+Kral la Liche
+
+3
+
+Avant le Combat: testez Sauter (13). Si
+
+vous échouez, prenez 1 et recommencez le test. Continuez à faire le test jusqu'à ce que vous réussissiez ou que vous soyez knock-out.
+
+Récompense: recevez 3 et prenez cette
+carte. Durant le combat, votre Héros peut défausser cette carte au lieu de faire une attaque magique pour infliger 1
+
+13/1
+11/0
+15/3
+
+----------------
+
+Mission de Goules
+
+4
+
+*Vous tombez sur un séide de Vorakesh qui augmente la légion du sombre seigneur en vidant un cimetière.*
+
+Avant le Combat: testez (14). Si vous
+
+réussissez, votre Héros et chacun de vos Alliés gagnent +1 à leur premier jet d'attaque au premier round de combat.
+
+Récompense: recevez 2.
+
+14/0
+10/1
+16/3
+
+----------------
+
+Lady Cathori
+
+3
+
+*Même si Lady Cathori est une fidèle de Vorakesh, elle vous invite à partager ses libations dans son sanctuaire.*
+
+Avant le Combat: chacun de vos Alliés
+
+doit faire un test Diplomatie (13). Si un Allié échoue, il ne peut pas participer à ce combat.
+
+Récompense: recevez 3.
+
+14/2
+11/0
+15/2
+
+-----

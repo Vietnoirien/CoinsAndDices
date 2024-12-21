@@ -1,0 +1,14 @@
+{
+  "name": "Sorcière de la Mort",
+  "health": 2,
+  "description": "Vous avez entendu des rumeurs disant que l'un des alliés de Vorakesh, une mystérieuse sorcière, a été vue dans le coin, mais personne ne confirmera cette histoire.",
+  "distance": 13,
+  "distance_degat": 1,
+  "melee": 11,
+  "melee_degat": 0,
+  "magie": 11,
+  "magie_degat": 1,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

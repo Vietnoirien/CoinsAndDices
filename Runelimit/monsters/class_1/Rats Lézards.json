@@ -1,0 +1,14 @@
+{
+  "name": "Rats Lézards",
+  "health": 2,
+  "description": "Les Rats lézards sont des charognes insatiables, que l'on trouve souvent dans le sillage des serviteurs de Vorakesh, se régalant des restes des sacrifices du nécromancien.",
+  "distance": 12,
+  "distance_degat": 0,
+  "melee": 11,
+  "melee_degat": 1,
+  "magie": 9,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

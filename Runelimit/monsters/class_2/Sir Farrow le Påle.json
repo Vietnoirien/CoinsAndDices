@@ -1,0 +1,14 @@
+{
+  "name": "Sir Farrow le Påle",
+  "health": 4,
+  "description": "Sir Farrow ne dit rien quand il apparut devant vous dans la pénombre, mais on voyait dans ses yeux la promesse de la mort.",
+  "distance": 13,
+  "distance_degat": 0,
+  "melee": 15,
+  "melee_degat": 0,
+  "magie": 12,
+  "magie_degat": 1,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

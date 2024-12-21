@@ -1,0 +1,14 @@
+{
+  "name": "Temple de Margath",
+  "health": 3,
+  "description": "À la recherche des serviteurs de Margath, vous découvrez un ancien temple que l'un d'entre eux appelle maison.",
+  "distance": 11,
+  "distance_degat": 0,
+  "melee": 10,
+  "melee_degat": 0,
+  "magie": 15,
+  "magie_degat": 2,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

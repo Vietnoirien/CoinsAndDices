@@ -1,0 +1,14 @@
+{
+  "name": "Nid de Razorwings",
+  "health": 2,
+  "description": "Une nuée de Razorwings a établi son nid dans la tour abandonnée d'un château en ruine. Terrifiés, les autochtones vous demandent de chasser les occupants de la tour.",
+  "distance": 13,
+  "distance_degat": 1,
+  "melee": 11,
+  "melee_degat": 1,
+  "magie": 11,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

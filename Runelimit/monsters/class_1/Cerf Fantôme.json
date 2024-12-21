@@ -1,0 +1,14 @@
+{
+  "name": "Cerf Fantôme",
+  "health": 3,
+  "description": "Selon la légende, le Cerf Fantôme est un mauvais présage, mais sa chair peut soigner un véritable Héros.",
+  "distance": 12,
+  "distance_degat": 0,
+  "melee": 12,
+  "melee_degat": 1,
+  "magie": 9,
+  "magie_degat": 1,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}
