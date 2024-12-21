@@ -71,6 +71,7 @@ class HexagonalGrid(wx.Frame):
         # Initialize managers and bindings
         self.right_panel = right_panel
         self.biome_manager = BiomeManager(self.hex_manager)
+        self.hex_manager.set_biome_manager(self.biome_manager)
         self.last_clicked_hex = None
         
         self.Bind(wx.EVT_SIZE, self.on_resize)        
@@ -97,70 +98,6 @@ class HexagonalGrid(wx.Frame):
             self.biome_manager.set_biome(self.last_clicked_hex, biome_name)
             self.canvas.Refresh()
 
-    def find_river_connections(self, col, row):
-        marsh_neighbors = []
-        other_water_neighbors = []
-
-        for adj_col, adj_row in self.hex_manager.get_neighbors(col, row):
-            adj_biome = self.biome_manager.get_biome((adj_col, adj_row))
-            if adj_biome == "Marais":
-                marsh_neighbors.append((adj_col, adj_row))
-            elif adj_biome in ["Riviere", "Ville"]:
-                other_water_neighbors.append((adj_col, adj_row))
-
-        connections = []
-        connections.extend(marsh_neighbors)
-        remaining_slots = 2 - len(connections)
-        if remaining_slots > 0:
-            connections.extend(other_water_neighbors[:remaining_slots])
-        return connections[:2]
-
-    def draw_connected_lines(self, dc, points, col, row, color):
-        current_biome = self.biome_manager.get_biome((col, row))
-        center = self.hex_manager.get_hex_center(col, row)
-    
-        if current_biome == "Riviere":
-            connections = self.find_river_connections(col, row)
-            for next_col, next_row in connections:
-                next_biome = self.biome_manager.get_biome((next_col, next_row))
-                next_center = self.hex_manager.get_hex_center(next_col, next_row)
-            
-                if next_biome in ["Marais", "Ville"]:
-                    mid_x = (center[0] + next_center[0]) / 2
-                    mid_y = (center[1] + next_center[1]) / 2
-                    dc.SetPen(wx.Pen(color, 2))
-                    dc.DrawLine(int(center[0]), int(center[1]), int(mid_x), int(mid_y))
-                else:
-                    dc.SetPen(wx.Pen(color, 2))
-                    dc.DrawLine(int(center[0]), int(center[1]), 
-                            int(next_center[0]), int(next_center[1]))
-    
-        elif current_biome == "Route":
-            for adj_col, adj_row in self.hex_manager.get_neighbors(col, row):
-                adj_biome = self.biome_manager.get_biome((adj_col, adj_row))
-                if self.should_connect(current_biome, adj_biome):
-                    adj_center = self.hex_manager.get_hex_center(adj_col, adj_row)
-                
-                    if adj_biome in ["Marais", "Ville"]:
-                        mid_x = (center[0] + adj_center[0]) / 2
-                        mid_y = (center[1] + adj_center[1]) / 2
-                        dc.SetPen(wx.Pen(color, 2))
-                        dc.DrawLine(int(center[0]), int(center[1]), int(mid_x), int(mid_y))
-                    else:
-                        dc.SetPen(wx.Pen(color, 2))
-                        dc.DrawLine(int(center[0]), int(center[1]), 
-                                int(adj_center[0]), int(adj_center[1]))
-
-    def draw_hex(self, dc, points, biome_data, col, row):
-        dc.SetPen(wx.Pen(wx.BLACK, 1))
-        dc.SetBrush(wx.Brush(biome_data["primary"]))
-        dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
-
-        current_biome = self.biome_manager.get_biome((col, row))
-        if biome_data["pattern"] and current_biome not in ["Marais", "Ville"]:
-            if biome_data["pattern"]["type"] == "line":
-                self.draw_connected_lines(dc, points, col, row, biome_data["pattern"]["color"])
-
     def on_paint(self, event):
         dc = wx.PaintDC(self.canvas)
         for row in range(self.grid_height):
@@ -171,7 +108,7 @@ class HexagonalGrid(wx.Frame):
             
                 biome_name = self.biome_manager.get_biome(pos)
                 biome_data = self.biome_manager.get_biome_data(biome_name)
-                self.draw_hex(dc, points, biome_data, col, row) 
+                self.hex_manager.draw_hex(dc, points, biome_data, col, row)
                    
     def on_resize(self, event):
         self.calculate_hex_size()

@@ -1,10 +1,15 @@
 import math
+import wx
 
 class HexManager:
     def __init__(self, grid_width, grid_height):
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.hex_size = 0
+        self.biome_manager = None  # Will need to be set after initialization
+        
+    def set_biome_manager(self, biome_manager):
+        self.biome_manager = biome_manager
         
     def calculate_hex_size(self, window_width, window_height):
         available_width = window_width * 0.6
@@ -62,3 +67,60 @@ class HexManager:
             if 0 <= new_col < self.grid_width and 0 <= new_row < self.grid_height:
                 neighbors.append((new_col, new_row))
         return neighbors
+
+    def draw_hex(self, dc, points, biome_data, col, row):
+        dc.SetPen(wx.Pen(wx.BLACK, 1))
+        dc.SetBrush(wx.Brush(biome_data["primary"]))
+        dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
+
+        current_biome = self.biome_manager.get_biome((col, row))
+        if biome_data["pattern"] and current_biome not in ["Marais", "Ville"]:
+            if biome_data["pattern"]["type"] == "line":
+                self.draw_connected_lines(dc, points, col, row, biome_data["pattern"]["color"])
+
+    def draw_connected_lines(self, dc, points, col, row, color):
+        current_biome = self.biome_manager.get_biome((col, row))
+        center = self.get_hex_center(col, row)
+    
+        if current_biome == "Riviere":
+            connections = self.find_river_connections(col, row)
+            for next_col, next_row in connections:
+                next_biome = self.biome_manager.get_biome((next_col, next_row))
+                next_center = self.get_hex_center(next_col, next_row)
+                self._draw_connection_line(dc, center, next_center, next_biome, color)
+    
+        elif current_biome == "Route":
+            for adj_col, adj_row in self.get_neighbors(col, row):
+                adj_biome = self.biome_manager.get_biome((adj_col, adj_row))
+                if self.biome_manager.should_connect(current_biome, adj_biome):
+                    adj_center = self.get_hex_center(adj_col, adj_row)
+                    self._draw_connection_line(dc, center, adj_center, adj_biome, color)
+
+    def _draw_connection_line(self, dc, start_center, end_center, end_biome, color):
+        if end_biome in ["Marais", "Ville"]:
+            mid_x = (start_center[0] + end_center[0]) / 2
+            mid_y = (start_center[1] + end_center[1]) / 2
+            dc.SetPen(wx.Pen(color, 2))
+            dc.DrawLine(int(start_center[0]), int(start_center[1]), int(mid_x), int(mid_y))
+        else:
+            dc.SetPen(wx.Pen(color, 2))
+            dc.DrawLine(int(start_center[0]), int(start_center[1]), 
+                    int(end_center[0]), int(end_center[1]))
+
+    def find_river_connections(self, col, row):
+        marsh_neighbors = []
+        other_water_neighbors = []
+
+        for adj_col, adj_row in self.get_neighbors(col, row):
+            adj_biome = self.biome_manager.get_biome((adj_col, adj_row))
+            if adj_biome == "Marais":
+                marsh_neighbors.append((adj_col, adj_row))
+            elif adj_biome in ["Riviere", "Ville"]:
+                other_water_neighbors.append((adj_col, adj_row))
+
+        connections = []
+        connections.extend(marsh_neighbors)
+        remaining_slots = 2 - len(connections)
+        if remaining_slots > 0:
+            connections.extend(other_water_neighbors[:remaining_slots])
+        return connections[:2]
