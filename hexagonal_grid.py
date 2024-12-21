@@ -6,6 +6,7 @@ from monster_edit import MonsterEditor
 import os
 from biome_manager import BiomeManager
 from hex_manager import HexManager
+from panel_manager import PanelManager
 
 class HexagonalGrid(wx.Frame):
     def __init__(self):
@@ -21,47 +22,53 @@ class HexagonalGrid(wx.Frame):
         self.hex_manager = HexManager(self.grid_width, self.grid_height)
         self.calculate_hex_size()
 
+        # Main panel setup
         self.panel = wx.Panel(self)
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        # Canvas setup
         self.canvas = wx.Panel(self.panel)
         self.canvas.SetBackgroundColour(wx.WHITE)
         self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         self.canvas.Bind(wx.EVT_LEFT_DOWN, self.on_click)
         self.canvas.Bind(wx.EVT_RIGHT_DOWN, self.on_right_click)
 
+        # Right panel setup
         right_panel = wx.Panel(self.panel)
         right_sizer = wx.BoxSizer(wx.VERTICAL)
 
+        # Editors setup
         self.char_editor = CharacterEditor(right_panel)
         self.monster_editor = MonsterEditor(right_panel)
 
+        # Buttons panel setup
         self.buttons_panel = wx.Panel(right_panel)
-        buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        # Initialize PanelManager
+        self.panel_manager = PanelManager(self)
+        self.panel_manager.register_panels(
+            self.buttons_panel,
+            self.char_editor,
+            self.monster_editor,
+            right_panel
+        )
 
-        self.char_button = wx.Button(self.buttons_panel, label="Créer un personnage")
-        self.monster_button = wx.Button(self.buttons_panel, label="Créer un monstre")
-        self.char_button.Enable(True)
-        self.monster_button.Enable(True)        
-        self.char_button.Bind(wx.EVT_BUTTON, self.show_char_editor)
-        self.monster_button.Bind(wx.EVT_BUTTON, self.show_monster_editor)
-
-        buttons_sizer.Add(self.char_button, 1, wx.ALL|wx.EXPAND, 5)
-        buttons_sizer.Add(self.monster_button, 1, wx.ALL|wx.EXPAND, 5)
-        self.buttons_panel.SetSizer(buttons_sizer)
-
+        # Right panel sizer setup
         right_sizer.Add(self.buttons_panel, 0, wx.EXPAND|wx.ALL|wx.GROW, 5)
         right_sizer.Add(self.char_editor, 1, wx.EXPAND|wx.ALL|wx.GROW, 5)
         right_sizer.Add(self.monster_editor, 1, wx.EXPAND|wx.ALL|wx.GROW, 5)
         right_panel.SetSizer(right_sizer)
 
+        # Main sizer setup
         main_sizer.Add(self.canvas, 3, wx.EXPAND|wx.ALL|wx.GROW, 5)
         main_sizer.Add(right_panel, 2, wx.EXPAND|wx.ALL|wx.GROW, 5)
         self.panel.SetSizer(main_sizer)
 
+        # Initial panel states
         self.char_editor.Hide()
         self.monster_editor.Hide()
 
+        # Initialize managers and bindings
         self.right_panel = right_panel
         self.biome_manager = BiomeManager(self.hex_manager)
         self.last_clicked_hex = None
@@ -70,30 +77,6 @@ class HexagonalGrid(wx.Frame):
         self.ensure_directory_structure()
         self.Center()
         self.Show()
-
-    def show_char_editor(self, event):
-        self.buttons_panel.Hide()
-        self.char_editor.Show()
-        self.buttons_panel.Disable()
-        self.char_editor.init_panel.Hide()
-        self.char_editor.editor_panel.Show()
-        self.monster_editor.Hide()
-        self.Layout()
-        self.force_layout()
-
-    def show_monster_editor(self, event):
-        self.buttons_panel.Hide()
-        self.buttons_panel.Disable()
-        self.monster_editor.Show()
-        self.monster_editor.init_panel.Hide()
-        self.monster_editor.editor_panel.Show()
-        self.char_editor.Hide()
-        self.Layout()
-        self.force_layout()
-
-    def rebind_buttons(self):
-        self.char_button.Bind(wx.EVT_BUTTON, self.show_char_editor)
-        self.monster_button.Bind(wx.EVT_BUTTON, self.show_monster_editor)
 
     def calculate_hex_size(self):
         width, height = self.GetSize()
@@ -208,13 +191,6 @@ class HexagonalGrid(wx.Frame):
         for directory in base_dirs:
             if not os.path.exists(directory):
                 os.makedirs(directory)
-
-    def force_layout(self):
-        self.panel.Layout()
-        self.right_panel.Layout()
-        self.char_editor.Layout()
-        self.monster_editor.Layout()
-        self.Refresh()
 
     def on_click(self, event):
         pos = event.GetPosition()
