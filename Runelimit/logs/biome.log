@@ -9431,3 +9431,170 @@
     "(7, 3)": 2
   }
 }
+2024-12-21 15:47:52,306 - INFO - Updating connections for hex (8, 4)
+2024-12-21 15:47:52,306 - DEBUG - Connected positions: [(9, 4), (8, 3)]
+2024-12-21 15:47:52,306 - DEBUG - Connection count changed for (8, 4): 0 -> 2
+2024-12-21 15:47:52,306 - DEBUG - Updated connected hex (9, 4) count: 1
+2024-12-21 15:47:52,306 - DEBUG - Updated connected hex (8, 3) count: 1
+2024-12-21 15:47:52,306 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 1
+  }
+}
+2024-12-21 15:47:52,306 - INFO - Updating connections for hex (7, 7)
+2024-12-21 15:47:52,307 - DEBUG - Connected positions: [(7, 6)]
+2024-12-21 15:47:52,307 - DEBUG - Connection count changed for (7, 7): 0 -> 1
+2024-12-21 15:47:52,307 - DEBUG - Updated connected hex (7, 6) count: 1
+2024-12-21 15:47:52,307 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 1,
+    "(7, 7)": 1,
+    "(7, 6)": 1
+  }
+}
+2024-12-21 15:47:52,307 - INFO - Updating connections for hex (7, 6)
+2024-12-21 15:47:52,307 - DEBUG - Connected positions: [(7, 7)]
+2024-12-21 15:47:52,307 - DEBUG - Connection count changed for (7, 6): 1 -> 1
+2024-12-21 15:47:52,307 - DEBUG - Updated connected hex (7, 7) count: 2
+2024-12-21 15:47:52,307 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 1,
+    "(7, 7)": 2,
+    "(7, 6)": 1
+  }
+}
+2024-12-21 15:47:52,308 - INFO - Updating connections for hex (7, 3)
+2024-12-21 15:47:52,308 - DEBUG - Connected positions: [(8, 3)]
+2024-12-21 15:47:52,308 - DEBUG - Connection count changed for (7, 3): 0 -> 1
+2024-12-21 15:47:52,308 - DEBUG - Updated connected hex (8, 3) count: 2
+2024-12-21 15:47:52,308 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 2,
+    "(7, 7)": 2,
+    "(7, 6)": 1,
+    "(7, 3)": 1
+  }
+}
+2024-12-21 15:47:52,308 - INFO - Updating connections for hex (8, 3)
+2024-12-21 15:47:52,308 - DEBUG - Connected positions: [(7, 3)]
+2024-12-21 15:47:52,308 - DEBUG - Connection count changed for (8, 3): 2 -> 1
+2024-12-21 15:47:52,308 - DEBUG - Updated connected hex (7, 3) count: 2
+2024-12-21 15:47:52,308 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 1,
+    "(7, 7)": 2,
+    "(7, 6)": 1,
+    "(7, 3)": 2
+  }
+}
+2024-12-21 15:47:52,309 - INFO - Updating connections for hex (9, 4)
+2024-12-21 15:47:52,309 - DEBUG - Connected positions: [(8, 3)]
+2024-12-21 15:47:52,309 - DEBUG - Connection count changed for (9, 4): 1 -> 1
+2024-12-21 15:47:52,309 - DEBUG - Updated connected hex (8, 3) count: 2
+2024-12-21 15:47:52,309 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 2,
+    "(7, 7)": 2,
+    "(7, 6)": 1,
+    "(7, 3)": 2
+  }
+}
+2024-12-21 15:47:52,309 - DEBUG - Saving biome state: {
+  "biomes": {
+    "(8, 4)": "Riviere",
+    "(7, 4)": "Plaine",
+    "(7, 5)": "Plaine",
+    "(7, 7)": "Riviere",
+    "(7, 6)": "Riviere",
+    "(8, 5)": "Plaine",
+    "(7, 3)": "Riviere",
+    "(8, 3)": "Riviere",
+    "(9, 4)": "Riviere"
+  },
+  "connections": {
+    "(8, 4)": 2,
+    "(9, 4)": 1,
+    "(8, 3)": 2,
+    "(7, 7)": 2,
+    "(7, 6)": 1,
+    "(7, 3)": 2
+  }
+}
