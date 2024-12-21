@@ -84,7 +84,7 @@ class MonsterEditor(wx.Panel):
         self.scroll_window.SetScrollRate(0, 20)
         scroll_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        grid_sizer = wx.FlexGridSizer(cols=2, vgap=2, hgap=10)
+        grid_sizer = wx.FlexGridSizer(cols=2)
         grid_sizer.AddGrowableCol(1, 1)
 
         for field_name, (label, control_class) in self.fields.items():
@@ -97,8 +97,8 @@ class MonsterEditor(wx.Panel):
                 control = control_class(self.scroll_window, size=(240, 20))
             else:
                 control = control_class(self.scroll_window)
-                control.SetInitialSize((80, 20))
-        
+                if control_class == wx.SpinCtrl:
+                    control.SetMinSize((32, -1))  # Set minimum width to 32 pixels
             self.controls[field_name] = control
             grid_sizer.Add(label_widget, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.ALIGN_RIGHT, 15)
             grid_sizer.Add(control, 0, wx.ALIGN_RIGHT, 5)
@@ -106,7 +106,7 @@ class MonsterEditor(wx.Panel):
         scroll_sizer.Add(grid_sizer, 1, wx.EXPAND|wx.ALL, 2)
         self.scroll_window.SetSizer(scroll_sizer)
         self.editor_sizer.Add(self.scroll_window, 1, wx.EXPAND)
-
+        
     def ensure_directory_structure(self):
         base_dir = 'Runelimit/monsters'
         if not os.path.exists(base_dir):

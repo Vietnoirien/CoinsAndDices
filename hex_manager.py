@@ -122,19 +122,24 @@ class HexManager:
                     int(end_center[0]), int(end_center[1]))
 
     def find_river_connections(self, col, row):
-        marsh_neighbors = []
-        other_water_neighbors = []
-
+        all_neighbors = []
+    
+        # Group neighbors by type
         for adj_col, adj_row in self.get_neighbors(col, row):
             adj_biome = self.biome_manager.get_biome((adj_col, adj_row))
-            if adj_biome == "Marais":
-                marsh_neighbors.append((adj_col, adj_row))
-            elif adj_biome in ["Riviere", "Ville"]:
-                other_water_neighbors.append((adj_col, adj_row))
-
-        connections = []
-        connections.extend(marsh_neighbors)
-        remaining_slots = 2 - len(connections)
-        if remaining_slots > 0:
-            connections.extend(other_water_neighbors[:remaining_slots])
-        return connections[:2]
+            if adj_biome in ["Marais", "Riviere", "Ville"]:
+                # Store tuple of (col, row, biome_type)
+                all_neighbors.append((adj_col, adj_row, adj_biome))
+    
+        # If we have more than 2 water neighbors, select the best connections
+        if len(all_neighbors) > 2:
+            # Prioritize creating continuous flow
+            # First, look for opposite pairs to create straight flows
+            for i, (col1, row1, biome1) in enumerate(all_neighbors):
+                for col2, row2, biome2 in all_neighbors[i+1:]:
+                    # Check if points are roughly opposite to each other
+                    if abs(col1 - col2) == 2 or abs(row1 - row2) == 2:
+                        return [(col1, row1), (col2, row2)]
+    
+        # If no optimal pairs found, return up to 2 neighbors
+        return [(n[0], n[1]) for n in all_neighbors[:2]]
