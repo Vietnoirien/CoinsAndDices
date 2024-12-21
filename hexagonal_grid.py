@@ -81,7 +81,11 @@ class HexagonalGrid(wx.Frame):
 
     def calculate_hex_size(self):
         width, height = self.GetSize()
-        self.hex_manager.calculate_hex_size(width, height)
+        # Add padding to account for the bottom line
+        canvas_height = height - 40  # Reduce usable height to create bottom padding
+        canvas_width = width - 40   # Add some horizontal padding as well
+        
+        self.hex_manager.calculate_hex_size(canvas_width, canvas_height)
 
     def should_connect(self, biome1, biome2):
         return self.biome_manager.should_connect(biome1, biome2)

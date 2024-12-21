@@ -12,20 +12,34 @@ class HexManager:
         self.biome_manager = biome_manager
         
     def calculate_hex_size(self, window_width, window_height):
+        self.canvas_width = window_width
+        self.canvas_height = window_height
         available_width = window_width * 0.6
         max_width = (available_width - 50) / (self.grid_width * 1.5)
         max_height = (window_height - 50) / (self.grid_height * math.sqrt(3))
         self.hex_size = min(max_width, max_height)
-        
+
     def get_hex_center(self, col, row):
         width = self.hex_size * 2
         height = self.hex_size * math.sqrt(3)
-        x = width * 0.75 * col
-        y = height * row
+    
+        # Calculate total grid dimensions
+        total_width = width * 0.75 * self.grid_width + width * 0.25
+        total_height = height * self.grid_height + (height * 0.5 if self.grid_width % 2 else 0)
+    
+        # Calculate offsets to center within the 60% width area
+        available_width = self.canvas_width * 0.6
+        x_offset = (available_width - total_width) / 2
+        y_offset = (self.canvas_height - total_height) / 2
+    
+        # Calculate hex position with offset
+        x = width * 0.75 * col + x_offset
+        y = height * row + y_offset
         if col % 2:
             y += height / 2
-        return (x + width/2, y + height/2)
         
+        return (x + width/2, y + height/2)
+    
     def get_hex_points(self, x, y):
         points = []
         for i in range(6):
