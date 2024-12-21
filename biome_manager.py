@@ -60,21 +60,19 @@ class BiomeManager:
     def update_connection_count(self, hex_pos):
         self.logger.info(f"Updating connections for hex {hex_pos}")
         pos_str = str(hex_pos)
-        old_count = self.connection_counts.get(pos_str, 0)
         
         connected_positions = self.get_connected_biomes(hex_pos)
         self.logger.debug(f"Connected positions: {connected_positions}")
         
-        new_count = len(connected_positions)
-        self.connection_counts[pos_str] = new_count
-        self.logger.debug(f"Connection count changed for {pos_str}: {old_count} -> {new_count}")
+        # Garantir au moins une connexion
+        self.connection_counts[pos_str] = max(1, len(connected_positions))
         
         for connected_pos in connected_positions:
             connected_str = str(connected_pos)
             if connected_str not in self.connection_counts:
-                self.connection_counts[connected_str] = 0
-            self.connection_counts[connected_str] += 1
-            self.logger.debug(f"Updated connected hex {connected_str} count: {self.connection_counts[connected_str]}")
+                self.connection_counts[connected_str] = 1
+            else:
+                self.connection_counts[connected_str] = min(2, self.connection_counts[connected_str] + 1)
         
         self.save_biomes()
 
@@ -144,9 +142,18 @@ class BiomeManager:
             self.clear_connections(current_pos)
             self.set_biome(current_pos, biome_name)
             
-            if biome_name == "Riviere":
+            # Forcer la mise à jour des connexions pour tous les voisins
+            if biome_name in ["Riviere", "Route"]:
+                # Obtenir et connecter les voisins valides
                 valid_connections = self.hex_manager.find_river_connections(*current_pos)
                 self.establish_connections(current_pos, valid_connections)
+                
+                # Mettre à jour les connexions des voisins
+                neighbors = self.hex_manager.get_neighbors(*current_pos)
+                for neighbor in neighbors:
+                    if self.get_biome(neighbor) in ["Riviere", "Route"]:
+                        neighbor_connections = self.hex_manager.find_river_connections(*neighbor)
+                        self.establish_connections(neighbor, neighbor_connections)
             
             self.hex_manager.canvas.Refresh()
 
@@ -160,13 +167,15 @@ class BiomeManager:
 
     def establish_connections(self, source_pos, target_positions):
         source_str = str(source_pos)
-        self.connection_counts[source_str] = len(target_positions)
+        # Initialiser la connexion source à 1 pour chaque connexion
+        self.connection_counts[source_str] = 1
         
         for target_pos in target_positions:
             target_str = str(target_pos)
             if target_str not in self.connection_counts:
-                self.connection_counts[target_str] = 0
-            self.connection_counts[target_str] += 1
+                self.connection_counts[target_str] = 1
+            else:
+                self.connection_counts[target_str] = min(2, self.connection_counts[target_str] + 1)
 
     def verify_connection_counts(self):
         self.connection_counts = {}
@@ -174,4 +183,16 @@ class BiomeManager:
             if biome == "Riviere":
                 hex_pos = eval(hex_pos_str)
                 self.update_connection_count(hex_pos)
+        self.save_biomes()
+
+    def set_connection_count(self, hex_pos, count):
+        """
+        Définit le nombre de connexions pour une position donnée
+        Args:
+            hex_pos: Tuple (col, row) représentant la position
+            count: Nombre de connexions à définir
+        """
+        pos_str = str(hex_pos)
+        self.connection_counts[pos_str] = count
+        self.logger.debug(f"Set connection count for {pos_str} to {count}")
         self.save_biomes()
