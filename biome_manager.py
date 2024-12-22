@@ -43,22 +43,33 @@ class BiomeManager:
         col, row = hex_pos
         if not (0 <= col < self.hex_manager.grid_width and 0 <= row < self.hex_manager.grid_height):
             return False
-            
+        
         if biome in self.biomes:
             old_biome = self.get_biome(hex_pos)
             self.hex_biomes[str(hex_pos)] = biome
             
-            # Handle river/route path updates
+            # Get all neighbors before making changes
+            neighbors = self.hex_manager.get_neighbors(col, row)
+            
+            # Remove current tile from river path
+            self.river_path.remove_tile(hex_pos)
+            
+            # If new tile is river, add it with connections
             if biome == "Riviere":
-                connections = self.hex_manager.find_river_connections(*hex_pos)
+                connections = self.hex_manager.find_river_connections(col, row)
                 self.river_path.add_river_tile(hex_pos, connections)
-            elif old_biome in ["Riviere", "Route"]:
-                self.river_path.remove_tile(hex_pos)
-                
+            
+            # Refresh all neighboring river tiles
+            for neighbor in neighbors:
+                if self.get_biome(neighbor) == "Riviere":
+                    n_col, n_row = neighbor
+                    neighbor_connections = self.hex_manager.find_river_connections(n_col, n_row)
+                    self.river_path.add_river_tile(neighbor, neighbor_connections)
+            
             self.save_biomes()
             return True
         return False
-
+    
     def get_biome(self, hex_pos):
         return self.hex_biomes.get(str(hex_pos), "Plaine")
 

@@ -150,23 +150,21 @@ class HexManager:
         valid_connections = []
         current_pos = (col, row)
         neighbors = self.get_neighbors(col, row)
-    
-        # First check existing river tiles with available connection slots
+
+        # First prioritize connecting to existing river tiles
         for neighbor in neighbors:
-            neighbor_tile = self.biome_manager.river_path.get_tile(neighbor)
-            if (neighbor_tile and 
-                len(neighbor_tile['connections']) < 2 and
-                self.biome_manager.get_biome(neighbor) == "Riviere"):
+            if (self.biome_manager.get_biome(neighbor) == "Riviere" and
+                len(self.biome_manager.river_path.get_tile(neighbor)['connections']) < 2):
                 valid_connections.append(neighbor)
                 if len(valid_connections) >= 2:
                     return valid_connections
-                
-        # Then check cities/swamps
+
+        # Then check cities/swamps if we still need connections
         for neighbor in neighbors:
             if (self.biome_manager.get_biome(neighbor) in ["Ville", "Marais"] and
                 neighbor not in valid_connections):
                 valid_connections.append(neighbor)
                 if len(valid_connections) >= 2:
                     return valid_connections
-    
+
         return valid_connections

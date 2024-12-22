@@ -12,81 +12,93 @@ class RiverPath:
         return None
         
     def add_river_tile(self, pos, connections):
-        # Validate connections against hex grid topology
         hex_manager = self.hex_manager
         valid_neighbors = hex_manager.get_neighbors(*pos)
         
-        # Filter out neighbors that already have 2 connections
-        available_connections = []
-        for conn in connections:
-            if conn in valid_neighbors:
-                existing_tile = self.get_tile(conn)
-                if not existing_tile or len(existing_tile['connections']) < 2:
-                    available_connections.append(conn)
+        # Prioritize maintaining existing river connections
+        existing_river_connections = []
+        for neighbor in valid_neighbors:
+            neighbor_tile = self.get_tile(neighbor)
+            if neighbor_tile and pos in neighbor_tile['connections']:
+                existing_river_connections.append(neighbor)
         
-        # Create new tile with validated connections
+        # Add new connections up to limit
+        remaining_slots = 2 - len(existing_river_connections)
+        new_connections = [c for c in connections if c not in existing_river_connections][:remaining_slots]
+        
+        all_connections = existing_river_connections + new_connections
+        
         new_tile = {
             'position': pos,
-            'connections': available_connections[:2]  # Max 2 connections
+            'connections': all_connections
         }
         
-        # Remove existing tile if present
-        self.river_tiles = [tile for tile in self.river_tiles 
-                           if tile['position'] != pos]
-        
-        # Add new tile and ensure bidirectional connections
+        self.river_tiles = [tile for tile in self.river_tiles if tile['position'] != pos]
         self.river_tiles.append(new_tile)
         
-        # Update neighbor connections
-        for conn_pos in available_connections:
-            found = False
-            for tile in self.river_tiles:
-                if tile['position'] == conn_pos:
-                    if pos not in tile['connections'] and len(tile['connections']) < 2:
-                        tile['connections'].append(pos)
-                    found = True
-                    break
-            if not found:
-                self.river_tiles.append({
-                    'position': conn_pos,
-                    'connections': [pos]
-                })
+        # Ensure bidirectional connections
+        for conn_pos in all_connections:
+            self._ensure_bidirectional_connection(pos, conn_pos)
         
         self._sort_river_path()
         self.validate_river_network()
         
-    def validate_river_network(self):
-        """Ensures river network follows valid flow patterns"""
-        # Find all endpoints (tiles with 1 connection)
-        endpoints = [tile for tile in self.river_tiles 
-                    if len(tile['connections']) == 1]
+    def _ensure_bidirectional_connection(self, pos1, pos2):
+        """Ensures both tiles reference each other in their connections"""
+        tile1 = self.get_tile(pos1)
+        tile2 = self.get_tile(pos2)
+    
+        if not tile2:
+            tile2 = {
+                'position': pos2,
+                'connections': [pos1]
+            }
+            self.river_tiles.append(tile2)
+        elif pos1 not in tile2['connections'] and len(tile2['connections']) < 2:
+            tile2['connections'].append(pos1)
         
-        if not endpoints:
-            return
-            
-        # Start from first endpoint
-        visited = set()
-        current = endpoints[0]
-        
-        while current:
-            pos_key = str(current['position'])
-            if pos_key in visited:
-                # Found a cycle, break it
-                current['connections'] = current['connections'][:1]
-                break
-                
-            visited.add(pos_key)
-            
-            # Find next unvisited connection
-            next_tile = None
-            for conn_pos in current['connections']:
-                next_key = str(conn_pos)
-                if next_key not in visited:
-                    next_tile = self.get_tile(conn_pos)
-                    break
-                    
-            current = next_tile
+        if pos2 not in tile1['connections'] and len(tile1['connections']) < 2:
+            tile1['connections'].append(pos2)
 
+    def validate_river_network(self):
+        """Enhanced validation to ensure proper river flow"""
+        if not self.river_tiles:
+            return
+        
+        # Find all endpoints (tiles with 1 connection)
+        endpoints = [tile for tile in self.river_tiles if len(tile['connections']) == 1]
+    
+        if not endpoints:
+            # If no endpoints, find a tile to start from
+            start_tile = self.river_tiles[0]
+        else:
+            start_tile = endpoints[0]
+    
+        # Trace the network and validate connections
+        visited = set()
+        to_visit = [(start_tile, None)]  # (tile, previous_tile)
+    
+        while to_visit:
+            current_tile, previous = to_visit.pop(0)
+            current_pos = current_tile['position']
+        
+            if str(current_pos) in visited:
+                continue
+            
+            visited.add(str(current_pos))
+        
+            # Check each connection
+            for conn_pos in current_tile['connections']:
+                next_tile = self.get_tile(conn_pos)
+                if next_tile and str(conn_pos) not in visited:
+                    to_visit.append((next_tile, current_tile))
+                
+                    # Validate bidirectional connection
+                    if current_pos not in next_tile['connections']:
+                        next_tile['connections'].append(current_pos)
+                        if len(next_tile['connections']) > 2:
+                            next_tile['connections'] = next_tile['connections'][:2]
+                            
     def remove_tile(self, position: tuple) -> None:
         """Remove a tile and update affected connections"""
         # Remove from river tiles
