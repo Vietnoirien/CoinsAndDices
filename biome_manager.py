@@ -172,6 +172,8 @@ class BiomeManager:
                 
                 # Update neighbor connections
                 self._update_neighbor_connections(current_pos)
+                
+                self.hex_manager.invalidate_river_buffer()
             
             self.hex_manager.canvas.Refresh()
 
