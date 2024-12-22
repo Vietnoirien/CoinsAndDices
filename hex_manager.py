@@ -122,10 +122,14 @@ class HexManager:
         if current_biome == "Riviere":
             river_tile = self.biome_manager.river_path.get_tile(current_pos)
             if river_tile:
-                for next_pos in river_tile['connections']:
-                    next_center = self.get_hex_center(*next_pos)
-                    next_biome = self.biome_manager.get_biome(next_pos)
-                    self._draw_connection_line(dc, center, next_center, next_biome, color)
+                # If no connections or only marsh/city connections, draw lake
+                if not river_tile['connections']:
+                    self._draw_lake(dc, center, color)
+                else:
+                    for next_pos in river_tile['connections']:
+                        next_center = self.get_hex_center(*next_pos)
+                        next_biome = self.biome_manager.get_biome(next_pos)
+                        self._draw_connection_line(dc, center, next_center, next_biome, color)
         elif current_biome == "Route":
             route_tile = self.biome_manager.river_path.get_tile(current_pos)
             if route_tile:
@@ -133,6 +137,25 @@ class HexManager:
                     next_center = self.get_hex_center(*next_pos)
                     next_biome = self.biome_manager.get_biome(next_pos)
                     self._draw_connection_line(dc, center, next_center, next_biome, color)
+
+    def _draw_lake(self, dc: wx.DC, center: Tuple[float, float], color: str) -> None:
+        import random
+        x, y = center
+        base_radius = self.hex_size * 0.3
+        num_points = 12
+        points = []
+        
+        for i in range(num_points):
+            angle = (i * 360 / num_points) * math.pi / 180
+            radius = base_radius * random.uniform(0.8, 1.2)
+            px = x + radius * math.cos(angle)
+            py = y + radius * math.sin(angle)
+            points.append((px, py))
+        
+        # Set both pen and brush to the same color
+        dc.SetPen(wx.Pen(color, self.LINE_PATTERN_WIDTH))
+        dc.SetBrush(wx.Brush(color))  # Add brush with same color
+        dc.DrawPolygon([wx.Point(int(px), int(py)) for px, py in points])
 
     def _draw_connection_line(self, dc: wx.DC, start_center: Tuple[float, float], 
                             end_center: Tuple[float, float], end_biome: str, color: str) -> None:
