@@ -8,27 +8,6 @@ class HexManager:
     HEX_ANGLE_RAD = math.pi / 180 * HEX_ANGLE_DEG
     CANVAS_WIDTH_RATIO = 0.6  # 60% of window width
     GRID_MARGIN = 50
-    FLOW_PRIORITIES = {
-        # Pour les colonnes paires
-        "even": {
-            (-1, 0): 1,    # Gauche
-            (1, 0): 1,     # Droite
-            (0, -1): 2,    # Haut
-            (-1, 1): 2,    # Bas-gauche
-            (0, 1): 2,     # Bas
-            (1, -1): 2,    # Haut-droite
-        },
-        # Pour les colonnes impaires
-        "odd": {
-            (-1, 0): 1,    # Gauche
-            (1, 0): 1,     # Droite
-            (-1, -1): 2,   # Haut-gauche
-            (0, -1): 2,    # Haut
-            (0, 1): 2,     # Bas
-            (1, 1): 2,     # Bas-droite
-        }
-    }
-    MAX_RIVER_CONNECTIONS = 2
     LINE_PATTERN_WIDTH = 2
 
     def __init__(self, grid_width: int, grid_height: int):
@@ -54,19 +33,14 @@ class HexManager:
         max_height = (window_height - self.GRID_MARGIN) / (self.grid_height * math.sqrt(3))
         self.hex_size = min(max_width, max_height)
 
-    def get_hex_center(self, col, row):
-        # Add margin offset to starting position
+    def get_hex_center(self, col: int, row: int) -> Tuple[float, float]:
         margin = 40
-        
-        # Horizontal spacing between hex centers
         horiz_spacing = self.hex_size * 1.5
-        # Vertical spacing between hex centers
         vert_spacing = self.hex_size * 1.732
         
         x = col * horiz_spacing + margin
         y = row * vert_spacing + margin
         
-        # Offset odd columns
         if col % 2:
             y += vert_spacing / 2
             
@@ -101,31 +75,31 @@ class HexManager:
 
     def get_neighbors(self, col: int, row: int) -> List[Tuple[int, int]]:
         neighbors = []
-        # Pour une grille hexagonale décalée (odd-q offset)
-        if col % 2 == 0:  # Colonne paire
-            directions = [
-                (-1, 0),   # Gauche
-                (1, 0),    # Droite
-                (0, -1),   # Haut
-                (-1, 1),   # Bas-gauche
-                (0, 1),    # Bas
-                (1, -1),   # Haut-droite
+        # Different neighbor patterns for even/odd columns
+        if col % 2 == 0:  # Even columns
+            offsets = [
+                (-1, 0),   # Left
+                (1, 0),    # Right
+                (0, -1),   # Top
+                (0, 1),    # Bottom
+                (-1, -1),  # Top-left
+                (1, -1)    # Top-right
             ]
-        else:  # Colonne impaire
-            directions = [
-                (-1, 0),   # Gauche
-                (1, 0),    # Droite
-                (-1, -1),  # Haut-gauche
-                (0, -1),   # Haut
-                (0, 1),    # Bas
-                (1, 1),    # Bas-droite
+        else:  # Odd columns
+            offsets = [
+                (-1, 0),   # Left
+                (1, 0),    # Right
+                (-1, 1),   # Bottom-left
+                (1, 1),    # Bottom-right
+                (0, -1),   # Top
+                (0, 1)     # Bottom
             ]
         
-        for dx, dy in directions:
+        for dx, dy in offsets:
             new_col, new_row = col + dx, row + dy
             if 0 <= new_col < self.grid_width and 0 <= new_row < self.grid_height:
                 neighbors.append((new_col, new_row))
-        
+    
         return neighbors
 
     def draw_hex(self, dc: wx.DC, points: List[Tuple[float, float]], biome_data: Dict, col: int, row: int) -> None:
@@ -133,41 +107,35 @@ class HexManager:
         dc.SetBrush(wx.Brush(biome_data["primary"]))
         dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
 
-        current_biome = self.biome_manager.get_biome((col, row))
+        current_pos = (col, row)
+        current_biome = self.biome_manager.get_biome(current_pos)
+        
         if biome_data["pattern"] and current_biome not in ["Marais", "Ville"]:
             if biome_data["pattern"]["type"] == "line":
-                self.draw_connected_lines(dc, points, col, row, biome_data["pattern"]["color"])
+                self.draw_path_lines(dc, points, col, row, biome_data["pattern"]["color"])
 
-    def get_position_priority(self, position: Tuple[int, int]) -> int:
-        return self.FLOW_PRIORITIES.get(position, 4)
-
-    def draw_connected_lines(self, dc: wx.DC, points: List[Tuple[float, float]], col: int, row: int, color: str) -> None:
+    def draw_path_lines(self, dc: wx.DC, points: List[Tuple[float, float]], col: int, row: int, color: str) -> None:
         current_pos = (col, row)
         current_biome = self.biome_manager.get_biome(current_pos)
         center = self.get_hex_center(col, row)
 
         if current_biome == "Riviere":
-            # S'assurer que la tuile courante a au moins une connexion
-            if self.biome_manager.get_connection_count(current_pos) == 0:
-                self.biome_manager.set_connection_count(current_pos, 1)
-                
-            connected_hexes = self.biome_manager.get_connected_biomes(current_pos)
-            for next_pos in connected_hexes:
-                next_center = self.get_hex_center(*next_pos)
-                next_biome = self.biome_manager.get_biome(next_pos)
-                # S'assurer que la tuile connectée a au moins une connexion
-                if self.biome_manager.get_connection_count(next_pos) == 0:
-                    self.biome_manager.set_connection_count(next_pos, 1)
-                self._draw_connection_line(dc, center, next_center, next_biome, color)
-
+            river_tile = self.biome_manager.river_path.get_tile(current_pos)
+            if river_tile:
+                for next_pos in river_tile['connections']:
+                    next_center = self.get_hex_center(*next_pos)
+                    next_biome = self.biome_manager.get_biome(next_pos)
+                    self._draw_connection_line(dc, center, next_center, next_biome, color)
         elif current_biome == "Route":
-            for adj_col, adj_row in self.get_neighbors(col, row):
-                adj_biome = self.biome_manager.get_biome((adj_col, adj_row))
-                if self.biome_manager.should_connect(current_biome, adj_biome):
-                    adj_center = self.get_hex_center(adj_col, adj_row)
-                    self._draw_connection_line(dc, center, adj_center, adj_biome, color)
+            route_tile = self.biome_manager.river_path.get_tile(current_pos)
+            if route_tile:
+                for next_pos in route_tile['connections']:
+                    next_center = self.get_hex_center(*next_pos)
+                    next_biome = self.biome_manager.get_biome(next_pos)
+                    self._draw_connection_line(dc, center, next_center, next_biome, color)
 
-    def _draw_connection_line(self, dc: wx.DC, start_center: Tuple[float, float], end_center: Tuple[float, float], end_biome: str, color: str) -> None:
+    def _draw_connection_line(self, dc: wx.DC, start_center: Tuple[float, float], 
+                            end_center: Tuple[float, float], end_biome: str, color: str) -> None:
         if end_biome in ["Marais", "Ville"]:
             mid_x = (start_center[0] + end_center[0]) / 2
             mid_y = (start_center[1] + end_center[1]) / 2
@@ -176,77 +144,29 @@ class HexManager:
         else:
             dc.SetPen(wx.Pen(color, self.LINE_PATTERN_WIDTH))
             dc.DrawLine(int(start_center[0]), int(start_center[1]), 
-                    int(end_center[0]), int(end_center[1]))
+                       int(end_center[0]), int(end_center[1]))
 
-    def is_edge_tile(self, col: int, row: int) -> bool:
-        return col == 0 or col == self.grid_width - 1 or row == 0 or row == self.grid_height - 1
-
-    def get_edge_sides(self, col: int, row: int) -> List[str]:
-        edges = []
-        if col == 0:
-            edges.append("west")
-        if col == self.grid_width - 1:
-            edges.append("east")
-        if row == 0:
-            edges.append("north")
-        if row == self.grid_height - 1:
-            edges.append("south")
-        return edges
-
-    def get_position_side(self, position: Tuple[int, int], col: int) -> str:
-        dx, dy = position
-        if col % 2 == 0:  # Colonne paire
-            if dy < 0 and dx == 0:
-                return "north"
-            elif dy > 0 and dx == 0:
-                return "south"
-            elif dx < 0:
-                return "west" if dy == 0 else "northwest" if dy < 0 else "southwest"
-            elif dx > 0:
-                return "east" if dy == 0 else "northeast" if dy < 0 else "southeast"
-        else:  # Colonne impaire
-            if dy < 0 and dx == 0:
-                return "north"
-            elif dy > 0 and dx == 0:
-                return "south"
-            elif dx < 0:
-                return "west" if dy == 0 else "northwest" if dy < 0 else "southwest"
-            elif dx > 0:
-                return "east" if dy == 0 else "northeast" if dy < 0 else "southeast"
-        return ""
     def find_river_connections(self, col: int, row: int) -> List[Tuple[int, int]]:
-        valid_neighbors = []
+        valid_connections = []
         current_pos = (col, row)
-
-        # Vérifier d'abord les connexions existantes
-        existing_connections = []
-        for adj_pos in self.get_neighbors(col, row):
-            if self.biome_manager.get_biome(adj_pos) == "Riviere":
-                if self.biome_manager.get_connection_count(adj_pos) > 0:
-                    existing_connections.append(adj_pos)
-
-        # Si des connexions existent déjà, les maintenir
-        if existing_connections:
-            for adj_pos in existing_connections:
-                position = self.get_relative_position(col, row, *adj_pos)
-                priority = self.get_position_priority(position)
-                valid_neighbors.append((adj_pos, priority))
-
-        # Ajouter de nouvelles connexions si nécessaire
-        for adj_pos in self.get_neighbors(col, row):
-            adj_col, adj_row = adj_pos
-            adj_biome = self.biome_manager.get_biome(adj_pos)
-
-            if adj_biome in ["Marais", "Riviere", "Ville"]:
-                self.biome_manager.set_connection_count(adj_pos, 1)
+        neighbors = self.get_neighbors(col, row)
     
-                if adj_pos not in existing_connections and self.biome_manager.get_connection_count(adj_pos) < self.MAX_RIVER_CONNECTIONS:
-                    position = self.get_relative_position(col, row, adj_col, adj_row)
-                    priority = self.get_position_priority(position)
-                    valid_neighbors.append((adj_pos, priority))
-
-        valid_neighbors.sort(key=lambda x: x[1])
-        return [pos for pos, _ in valid_neighbors[:self.MAX_RIVER_CONNECTIONS]]
-
-    def get_relative_position(self, current_col: int, current_row: int, adj_col: int, adj_row: int) -> Tuple[int, int]:
-        return (adj_col - current_col, adj_row - current_row)
+        # First check existing river tiles with available connection slots
+        for neighbor in neighbors:
+            neighbor_tile = self.biome_manager.river_path.get_tile(neighbor)
+            if (neighbor_tile and 
+                len(neighbor_tile['connections']) < 2 and
+                self.biome_manager.get_biome(neighbor) == "Riviere"):
+                valid_connections.append(neighbor)
+                if len(valid_connections) >= 2:
+                    return valid_connections
+                
+        # Then check cities/swamps
+        for neighbor in neighbors:
+            if (self.biome_manager.get_biome(neighbor) in ["Ville", "Marais"] and
+                neighbor not in valid_connections):
+                valid_connections.append(neighbor)
+                if len(valid_connections) >= 2:
+                    return valid_connections
+    
+        return valid_connections
