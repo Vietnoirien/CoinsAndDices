@@ -221,6 +221,14 @@ class RiverPath:
                 
             visited.add(pos_key)
             current_tile = self.get_tile(current_pos)
+            
+            # Ajout de la vérification du biome
+            current_biome = self.hex_manager.biome_manager.get_biome(current_pos)
+            if current_biome in ["Ville", "Marais"]:
+                # Pour les villes et marais, on ajoute le tile mais on arrête le tracé
+                segment.append(current_tile)
+                break
+                
             if not current_tile:
                 break
                 
@@ -234,8 +242,7 @@ class RiverPath:
                     break
             current_pos = next_pos
                 
-        return segment
-        
+        return segment        
     def _pos_to_key(self, position):
         """Convert position tuple to string key"""
         return str(position)

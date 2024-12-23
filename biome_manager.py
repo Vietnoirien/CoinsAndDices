@@ -12,15 +12,15 @@ class BiomeManager:
         self.drawing_manager = hex_manager.drawing_manager
         self.hex_biomes = {}
         self.biomes = {
-            "Marais": {"primary": wx.Colour(0, 100, 100), "pattern": None},
-            "Plaine": {"primary": wx.Colour(144, 238, 144), "pattern": None},
+            "Marais": {"primary": wx.Colour(120, 200, 110), "pattern": None},
+            "Plaine": {"primary": wx.Colour(120, 200, 110), "pattern": None},
             "Riviere": {
-                "primary": wx.Colour(144, 238, 144),
+                "primary": wx.Colour(120, 200, 110),
                 "pattern": {"color": wx.Colour(0, 0, 255), "type": "line"}
             },
             "Colline": {"primary": wx.Colour(165, 113, 78), "pattern": None},
             "Route": {
-                "primary": wx.Colour(144, 238, 144),
+                "primary": wx.Colour(120, 200, 110),
                 "pattern": {"color": wx.Colour(139, 69, 19), "type": "line"}
             },
             "Montagne": {"primary": wx.Colour(101, 67, 33), "pattern": None},
@@ -123,6 +123,8 @@ class BiomeManager:
             return False
             
         if biome1 == "Riviere" and biome2 in ["Riviere", "Ville", "Marais"]:
+            return True
+        if biome1 == "Marais" and biome2 == "Riviere":
             return True
         
         if biome1 == "Route" and biome2 in ["Route", "Ville"]:

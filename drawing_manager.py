@@ -35,6 +35,8 @@ class DrawingManager:
             self._draw_river_tile(dc, current_pos, center)
         elif current_biome == "Route":
             self._draw_route_tile(dc, current_pos, center)
+        elif current_biome == "Marais":
+            self._draw_swamp(dc, center)
         elif biome_data["pattern"]:
             self._draw_pattern_overlay(dc, points, biome_data["pattern"])
 
@@ -101,6 +103,44 @@ class DrawingManager:
                             end_center: Tuple[float, float], end_biome: str, color: str) -> None:
         gc = wx.GraphicsContext.Create(dc)
         if gc:
+            if end_biome == "Marais":
+                base_radius = self.hex_manager.hex_size * 0.7
+                swamp_points = self._generate_swamp_shape(end_center, base_radius)
+                
+                dx = start_center[0] - end_center[0]
+                dy = start_center[1] - end_center[1]
+                angle_to_river = math.atan2(dy, dx)
+                
+                # Trouver le meilleur point d'intersection avec la forme du marais
+                best_point = swamp_points[0]
+                min_angle_diff = float('inf')
+                
+                for point in swamp_points:
+                    test_angle_diff = abs(math.atan2(point[1] - end_center[1], 
+                                                point[0] - end_center[0]) - angle_to_river)
+                    if test_angle_diff < min_angle_diff:
+                        min_angle_diff = test_angle_diff
+                        best_point = point
+                
+                path = gc.CreatePath()
+                path.MoveToPoint(best_point[0], best_point[1])
+                path.AddLineToPoint(start_center[0], start_center[1])
+                
+                gc.SetPen(wx.Pen(color, self.LINE_PATTERN_WIDTH))
+                gc.DrawPath(path)
+                return
+                
+            elif end_biome == "Ville":
+                hex_points = self.hex_manager.get_hex_points(*end_center)
+                hex_sides = list(zip(hex_points, hex_points[1:] + [hex_points[0]]))
+                
+                closest_side = min(hex_sides, 
+                                key=lambda side: ((side[0][0] + side[1][0])/2 - start_center[0])**2 + 
+                                                ((side[0][1] + side[1][1])/2 - start_center[1])**2)
+                
+                end_center = ((closest_side[0][0] + closest_side[1][0])/2,
+                            (closest_side[0][1] + closest_side[1][1])/2)
+            
             path = gc.CreatePath()
             base_width = self.LINE_PATTERN_WIDTH
             width_variation = random.uniform(1.5, 2.2)
@@ -180,3 +220,47 @@ class DrawingManager:
             path.AddLineToPoint(end_center[0], end_center[1])
 
             gc.DrawPath(path)
+
+    def _generate_swamp_shape(self, center: Tuple[float, float], base_radius: float) -> List[Tuple[float, float]]:
+        x, y = center
+        num_points = 16
+        points = []
+    
+        prev_radius = base_radius
+        for i in range(num_points):
+            angle = (i * 360 / num_points) * math.pi / 180
+            radius = (prev_radius + base_radius * random.uniform(0.7, 1.3)) / 2
+            prev_radius = radius
+        
+            px = x + radius * math.cos(angle)
+            py = y + radius * math.sin(angle)
+            points.append((px, py))
+    
+        points.append(points[0])  # Fermer la forme
+        return points
+
+    def _draw_swamp(self, dc: wx.DC, center: Tuple[float, float]) -> List[Tuple[float, float]]:
+        base_radius = self.hex_manager.hex_size * 0.7
+        swamp_points = self._generate_swamp_shape(center, base_radius)
+        swamp_color = wx.Colour(100, 170, 220)
+        vegetation_color = wx.Colour(80, 160, 70)
+
+        # Dessiner la forme du marais
+        dc.SetPen(wx.Pen(swamp_color, self.LINE_PATTERN_WIDTH))
+        dc.SetBrush(wx.Brush(swamp_color))
+        dc.DrawPolygon([wx.Point(int(px), int(py)) for px, py in swamp_points])
+
+        # Ajouter les points de végétation
+        num_dots = random.randint(8, 12)
+        for _ in range(num_dots):
+            angle = random.uniform(0, 2 * math.pi)
+            radius = random.uniform(0, base_radius * 0.6)
+            dot_x = center[0] + radius * math.cos(angle)
+            dot_y = center[1] + radius * math.sin(angle)
+            dot_size = random.uniform(3, 6)
+        
+            dc.SetBrush(wx.Brush(vegetation_color))
+            dc.SetPen(wx.Pen(vegetation_color))
+            dc.DrawCircle(int(dot_x), int(dot_y), int(dot_size))
+
+        return swamp_points
