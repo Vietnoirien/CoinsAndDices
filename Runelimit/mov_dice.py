@@ -1,16 +1,21 @@
 import wx
 import random
 from events import TerrainHoverEvent
-
 class MovementPhase(wx.Panel):
     def __init__(self, parent, player_name):
         super().__init__(parent)
         self.turn_count = 1
         self.current_phase = "Mouvement"
-        
+        self.selected_face = None
+        self.player_movements = []
+        self.last_movement = None
+        self.last_face_used = None
+        self.player = None  # Référence au joueur
+        self.starting_position = None
+    
         # Création du sizer principal
         main_sizer = wx.BoxSizer(wx.VERTICAL)
-        
+    
         # Section compteur de tours
         turn_box = wx.StaticBox(self, label="Tour")
         turn_sizer = wx.StaticBoxSizer(turn_box, wx.VERTICAL)
@@ -25,34 +30,38 @@ class MovementPhase(wx.Panel):
         player_sizer.Add(self.player_text, 0, wx.ALL|wx.CENTER, 5)
         main_sizer.Add(player_sizer, 0, wx.EXPAND|wx.ALL, 5)
 
-        
         # Section phase actuelle
         phase_box = wx.StaticBox(self, label="Phase")
         phase_sizer = wx.StaticBoxSizer(phase_box, wx.VERTICAL)
         self.phase_text = wx.StaticText(self, label=self.current_phase)
         phase_sizer.Add(self.phase_text, 0, wx.ALL|wx.CENTER, 5)
         main_sizer.Add(phase_sizer, 0, wx.EXPAND|wx.ALL, 5)
-        
+    
         # Section dés de mouvement
         dice_box = wx.StaticBox(self, label="Dés de mouvement")
         self.dice_sizer = wx.StaticBoxSizer(dice_box, wx.VERTICAL)
-        
+    
         # Bouton pour lancer les dés
         self.roll_btn = wx.Button(self, label="Lancer les dés")
         self.roll_btn.Bind(wx.EVT_BUTTON, self.on_roll_dice)
         self.dice_sizer.Add(self.roll_btn, 0, wx.ALL|wx.CENTER, 5)
-        
+    
         # Zone pour afficher les résultats des dés
         self.dice_results = wx.ScrolledWindow(self)
         self.dice_results.SetScrollRate(0, 20)
         self.results_sizer = wx.BoxSizer(wx.VERTICAL)
         self.dice_results.SetSizer(self.results_sizer)
         self.dice_sizer.Add(self.dice_results, 1, wx.EXPAND|wx.ALL, 5)
-        
+    
         main_sizer.Add(self.dice_sizer, 1, wx.EXPAND|wx.ALL, 5)
-        
+    
+        # Bouton d'annulation
+        self.cancel_btn = wx.Button(self, label="Annuler le mouvement")
+        self.cancel_btn.Bind(wx.EVT_BUTTON, self.on_cancel_move)
+        main_sizer.Add(self.cancel_btn, 0, wx.EXPAND|wx.ALL, 5)
+    
         self.SetSizer(main_sizer)
-        
+    
         # Configuration des faces des dés Runebound
         self.faces = [
             ["Marais", "Riviere"],
@@ -62,42 +71,54 @@ class MovementPhase(wx.Panel):
             ["Route", "Riviere"],
             ["Route", "Plaine", "Colline"]
         ]
-        
+    
         self.rerolls_used = set()
-        self.parent = parent  # Garder une référence au parent pour les événements
-
+        self.parent = parent
+    def lock_selected_face(self):
+        if self.selected_face:
+            # Si c'est le premier mouvement, on sauvegarde la position de départ
+            if not self.player_movements:
+                self.starting_position = self.GetTopLevelParent().get_player_position()
+                
+            dice_panel = self.selected_face.GetParent()
+            dice_btn = dice_panel.GetChildren()[0]
+            
+            # Sauvegarder l'état avant le verrouillage
+            self.last_face_used = self.selected_face
+            self.last_movement = self.selected_face.GetLabel()
+            
+            # Désactiver le dé principal
+            dice_btn.SetBackgroundColour(wx.RED)
+            dice_btn.Disable()
+            
+            # Récupérer l'index directement depuis le bouton principal
+            dice_index = dice_btn.dice_index
+            
+            # Désactiver le bouton de relance
+            reroll_btn = dice_panel.GetChildren()[-1]
+            self.rerolls_used.add(dice_index)
+            reroll_btn.Disable()
+            reroll_btn.SetBackgroundColour(wx.LIGHT_GREY)
+            
+            # Désactiver la face sélectionnée
+            self.selected_face.Disable()
+            
+            # Stocker le mouvement
+            self.player_movements.append(self.selected_face.GetLabel())
+            self.selected_face = None            
     def create_dice_panel(self, index):
         dice_panel = wx.Panel(self.dice_results)
         dice_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+    
         face = random.choice(self.faces)
-        
+    
         # Bouton principal du dé
         dice_btn = wx.Button(dice_panel, label=f"Dé {index+1}")
         dice_btn.SetBackgroundColour(wx.WHITE)
-        
+        dice_btn.dice_index = index
         # Bouton de relance
         reroll_btn = wx.Button(dice_panel, label="↻")
-        reroll_btn.dice_index = index
-        
-        if index in self.rerolls_used:
-            reroll_btn.Disable()
-            reroll_btn.SetBackgroundColour(wx.LIGHT_GREY)
-        else:
-            reroll_btn.SetBackgroundColour(wx.BLUE)
-            reroll_btn.SetForegroundColour(wx.WHITE)
-
-        def create_hover_handler(terrain_type):
-            def on_hover(evt):
-                print(f"Hover sur: {terrain_type}")  # Debug
-                top_parent = self.GetTopLevelParent()
-                wx.PostEvent(top_parent, TerrainHoverEvent(terrain=terrain_type))
-            def on_leave(evt):
-                print("Leave")  # Debug
-                top_parent = self.GetTopLevelParent()
-                wx.PostEvent(top_parent, TerrainHoverEvent(terrain=None))
-            return on_hover, on_leave
-        
+        reroll_btn.dice_index = index  # Cette ligne est cruciale
         # Création des boutons de face
         face_buttons = []
         for terrain in face:
@@ -108,23 +129,41 @@ class MovementPhase(wx.Panel):
             def create_face_handler(buttons, clicked_btn, dice_button):
                 def on_click(evt):
                     if dice_button.GetBackgroundColour() != wx.RED:
-                        # Si le bouton est déjà vert, on le désélectionne
                         if clicked_btn.GetBackgroundColour() == wx.GREEN:
                             clicked_btn.SetBackgroundColour(wx.WHITE)
+                            self.selected_face = None
+                            top_parent = self.GetTopLevelParent()
+                            wx.PostEvent(top_parent, TerrainHoverEvent(terrain=None, is_selected=False))
                         else:
-                            # Sinon on désélectionne les autres et on le sélectionne
+                            if self.selected_face:
+                                self.selected_face.SetBackgroundColour(wx.WHITE)
                             for b in buttons:
                                 b.SetBackgroundColour(wx.WHITE)
                             clicked_btn.SetBackgroundColour(wx.GREEN)
+                            self.selected_face = clicked_btn
+                            top_parent = self.GetTopLevelParent()
+                            wx.PostEvent(top_parent, TerrainHoverEvent(terrain=clicked_btn.GetLabel(), is_selected=True))
                 return on_click
+
+            def create_hover_handler(terrain_type):
+                def on_hover(evt):
+                    if not self.selected_face:
+                        top_parent = self.GetTopLevelParent()
+                        wx.PostEvent(top_parent, TerrainHoverEvent(terrain=terrain_type, is_selected=False))
+                    evt.Skip()
+                def on_leave(evt):
+                    if not self.selected_face:
+                        top_parent = self.GetTopLevelParent()
+                        wx.PostEvent(top_parent, TerrainHoverEvent(terrain=None, is_selected=False))
+                    evt.Skip()
+                return on_hover, on_leave
             
             btn.Bind(wx.EVT_BUTTON, create_face_handler(face_buttons, btn, dice_btn))
-            dice_sizer.Add(btn, 0, wx.ALL, 5)
-        
             hover, leave = create_hover_handler(terrain)
             btn.Bind(wx.EVT_ENTER_WINDOW, hover)
-            btn.Bind(wx.EVT_LEAVE_WINDOW, leave)            
-
+            btn.Bind(wx.EVT_LEAVE_WINDOW, leave)
+            dice_sizer.Add(btn, 0, wx.ALL, 5)
+            
         def on_reroll(evt):
             btn = evt.GetEventObject()
             if btn.dice_index not in self.rerolls_used:
@@ -162,6 +201,7 @@ class MovementPhase(wx.Panel):
         self.rerolls_used.clear()
         self.results_sizer.Clear(True)
         self.dice_panels = []
+        self.selected_face = None
         
         for i in range(5):  # 5 dés par défaut pour Runebound
             dice_panel = self.create_dice_panel(i)
@@ -174,3 +214,40 @@ class MovementPhase(wx.Panel):
     def next_turn(self):
         self.turn_count += 1
         self.turn_text.SetLabel(f"Tour {self.turn_count}")
+        
+    def cancel_last_move(self):
+        if self.last_face_used and self.last_movement:
+            # Restaurer la position du joueur
+            if len(self.player_movements) == 1:
+                self.player.position = self.starting_position
+            else:
+                # Logique existante pour les autres mouvements
+                pass
+            
+            # Reste du code d'annulation existant
+            dice_panel = self.last_face_used.GetParent()
+            dice_btn = dice_panel.GetChildren()[0]
+            dice_btn.SetBackgroundColour(wx.WHITE)
+            dice_btn.Enable()
+        
+            reroll_btn = dice_panel.GetChildren()[-1]
+            if dice_btn.dice_index in self.rerolls_used:
+                self.rerolls_used.remove(dice_btn.dice_index)
+            reroll_btn.Enable()
+            reroll_btn.SetBackgroundColour(wx.WHITE)
+        
+            self.last_face_used.Enable()
+            self.last_face_used.SetBackgroundColour(wx.WHITE)
+        
+            if self.player_movements:
+                self.player_movements.pop()
+            
+            self.last_face_used = None
+            self.last_movement = None    
+
+    def on_cancel_move(self, event):
+        self.cancel_last_move()
+
+    def set_player(self, player):
+        self.player = player
+        self.starting_position = player.position

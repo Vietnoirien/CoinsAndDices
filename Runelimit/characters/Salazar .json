@@ -1,0 +1,14 @@
+{
+  "name": "Salazar ",
+  "level": 1,
+  "exp": 0,
+  "gold": 3,
+  "pv": 4,
+  "fatigue": 3,
+  "distance": 1,
+  "distance_degat": 1,
+  "melee": 1,
+  "melee_degat": 1,
+  "magie": 1,
+  "magie_degat": 1
+}

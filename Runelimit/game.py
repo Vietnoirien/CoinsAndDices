@@ -2,19 +2,33 @@ import wx
 from Hyperbolic_Paraboloide import create_paraboloid_canvas
 from player import Player
 import random
+from managers.manager_setup import setup_managers
 
 class RunelimitGame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title='Runelimit', size=(1024, 768))
+        
+        # Forcer les dimensions minimales
+        self.SetMinSize((800, 600))
+        
+        # Initialisation des managers
+        self.hex_manager, self.drawing_manager, self.biome_manager = setup_managers(13, 14)
+        
+        # Calculer la taille après création de la fenêtre
+        self.hex_manager.calculate_hex_size(1024, 768)
         self.panel = wx.Panel(self)
+        self.setup_ui()
+        self.Show()  # Ajouter cette ligne
+        
+    def setup_ui(self):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         
-        # Titre du jeu
+        # Titre
         title = wx.StaticText(self.panel, label="Runelimit")
         title.SetFont(wx.Font(48, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         main_sizer.Add(title, 0, wx.ALL|wx.CENTER, 20)
         
-        # Création du paraboloïde hyperbolique
+        # Canvas du paraboloïde
         canvas = create_paraboloid_canvas(self.panel)
         main_sizer.Add(canvas, 1, wx.EXPAND|wx.ALL, 10)
         
@@ -26,7 +40,6 @@ class RunelimitGame(wx.Frame):
         
         self.panel.SetSizer(main_sizer)
         self.Center()
-        self.Show()
         
     def on_start(self, event):
         # Effacer le contenu actuel
@@ -55,22 +68,23 @@ class RunelimitGame(wx.Frame):
         
         self.panel.SetSizer(main_sizer)
         self.panel.Layout()
-
+        
     def on_player_count_selected(self, event):
         self.num_players = self.player_count.GetValue()
         self.current_player = 0
         self.players = []
-        
+
         # Récupérer les villes du centre de la carte
         self.cities = []
-        for pos_str, biome in Player.load_biomes().items():
-            pos = eval(pos_str)
+        biomes_data = Player.load_biomes()
+        for pos_str, biome in biomes_data["biomes"].items():  # Accéder à la sous-clé "biomes"
+            coords = pos_str.strip('()').split(',')
+            pos = (int(coords[0]), int(coords[1]))
             if biome == "Ville" and 2 <= pos[0] <= 8 and 2 <= pos[1] <= 8:
                 self.cities.append(pos)
-        
         # Récupérer les personnages disponibles
         self.available_characters = Player.get_available_characters()
-        
+    
         self.show_next_player_selection()
 
     def show_next_player_selection(self):

@@ -1,0 +1,7 @@
+2024-12-23 12:58:44,574 - DEBUG - Saving biome state: {
+  "biomes": {},
+  "river_paths": {
+    "rivers": [],
+    "routes": []
+  }
+}
