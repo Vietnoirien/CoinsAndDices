@@ -160,37 +160,69 @@ class BiomeManager:
             self.river_path.remove_tile(current_pos)
             self.set_biome(current_pos, biome_name)
             
-            if biome_name in ["Riviere", "Route"]:
-                # Get valid connections based on available slots
+            # Handle both river and route connections
+            if biome_name == "Riviere":
                 valid_connections = self.hex_manager.find_river_connections(*current_pos)
+                self.river_path.add_river_tile(current_pos, valid_connections)
+            elif biome_name == "Route":
+                valid_connections = self.hex_manager.find_route_connections(*current_pos)
+                self.river_path.add_route_tile(current_pos, valid_connections)
                 
-                # Add tile with validated connections
-                if biome_name == "Riviere":
-                    self.river_path.add_river_tile(current_pos, valid_connections)
-                else:
-                    self.river_path.add_route_tile(current_pos, valid_connections)
-                
-                # Update neighbor connections
-                self._update_neighbor_connections(current_pos)
-                
-                self.hex_manager.invalidate_river_buffer()
-            
+            # Update neighbors for both types
+            self._update_neighbor_connections(current_pos)
+            self.hex_manager.invalidate_river_buffer()
             self.hex_manager.canvas.Refresh()
 
     def _update_neighbor_connections(self, current_pos):
-        """
-        Updates connections for all neighboring tiles after a biome change
-        Args:
-            current_pos: Tuple (col, row) of the changed tile
-        """
         neighbors = self.hex_manager.get_neighbors(*current_pos)
         for neighbor in neighbors:
-            if self.get_biome(neighbor) in ["Riviere", "Route"]:
-                # Get valid connections for neighbor
+            neighbor_biome = self.get_biome(neighbor)
+            if neighbor_biome == "Riviere":
                 neighbor_connections = self.hex_manager.find_river_connections(*neighbor)
+                self.river_path.add_river_tile(neighbor, neighbor_connections)
+            elif neighbor_biome == "Route":
+                neighbor_connections = self.hex_manager.find_route_connections(*neighbor)
+                self.river_path.add_route_tile(neighbor, neighbor_connections)
+
+    def validate_path_connections(self):
+        """Validate both river and route connections"""
+        self.river_path.validate_river_network()
+        self.validate_route_network()
+
+    def validate_route_network(self):
+        """Validate route connections and ensure proper network flow"""
+        for route_tile in self.river_path.route_tiles:
+            pos = route_tile['position']
+            connections = route_tile['connections']
+            
+            # Validate each connection
+            valid_connections = []
+            for conn_pos in connections:
+                conn_biome = self.get_biome(conn_pos)
+                if conn_biome in ["Route", "Ville"]:
+                    valid_connections.append(conn_pos)
+            
+            # Update connections if needed
+            if len(valid_connections) != len(connections):
+                route_tile['connections'] = valid_connections[:2]  # Maximum 2 connections
+
+    def get_city_connections(self, hex_pos):
+        """Separate handling for city connections"""
+        river_connections = []
+        route_connections = []
+        
+        col, row = hex_pos
+        neighbors = self.hex_manager.get_neighbors(col, row)
+        
+        for neighbor in neighbors:
+            neighbor_biome = self.get_biome(neighbor)
+            if neighbor_biome == "Riviere":
+                river_connections.append(neighbor)
+            elif neighbor_biome == "Route":
+                route_connections.append(neighbor)
                 
-                # Update neighbor's connections based on its type
-                if self.get_biome(neighbor) == "Riviere":
-                    self.river_path.add_river_tile(neighbor, neighbor_connections)
-                else:
-                    self.river_path.add_route_tile(neighbor, neighbor_connections)
+        return {
+            'river': river_connections[:2],  # Limit to 2 connections
+            'route': route_connections[:2]
+        }
+

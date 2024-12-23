@@ -109,43 +109,88 @@ class HexManager:
                 neighbors.append((new_col, new_row))
     
         return neighbors
+    
     def draw_hex(self, dc: wx.DC, points: List[Tuple[float, float]], biome_data: Dict, col: int, row: int) -> None:
-        # Draw the base hex
-        dc.SetPen(wx.Pen(wx.BLACK, 1))
-        dc.SetBrush(wx.Brush(biome_data["primary"]))
-        dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
-
-        # Draw patterns only if needed
-        current_pos = (col, row)
-        current_biome = self.biome_manager.get_biome(current_pos)
-        
-        if biome_data["pattern"] and current_biome in ["Riviere", "Route"]:
-            self.draw_path_lines(dc, points, col, row, biome_data["pattern"]["color"])
-
-    def draw_path_lines(self, dc: wx.DC, points: List[Tuple[float, float]], col: int, row: int, color: str) -> None:
         current_pos = (col, row)
         current_biome = self.biome_manager.get_biome(current_pos)
         center = self.get_hex_center(col, row)
-
-        # Draw directly to DC for now, buffer will be used for optimization later
-        if current_biome == "Riviere":
+        
+        # 1. Draw base hexagon with biome color
+        dc.SetPen(wx.Pen(wx.BLACK, 1))
+        dc.SetBrush(wx.Brush(biome_data["primary"]))
+        dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
+        
+        # 2. Handle city tiles
+        if current_biome == "Ville":
+            # Draw city symbol (central circle)
+            gc = wx.GraphicsContext.Create(dc)
+            if gc:
+                # Draw city circle
+                radius = self.hex_size * 0.3
+                gc.SetBrush(wx.Brush(wx.Colour(200, 200, 200)))  # Light grey fill
+                gc.SetPen(wx.Pen(wx.BLACK, 2))
+                gc.DrawEllipse(center[0] - radius, center[1] - radius, radius * 2, radius * 2)
+                
+                # Draw connections
+                self.draw_city_connections(dc, center, current_pos)
+        
+        # 3. Handle river tiles
+        elif current_biome == "Riviere":
             river_tile = self.biome_manager.river_path.get_tile(current_pos)
             if river_tile:
                 if not river_tile['connections']:
-                    self._draw_lake(dc, center, color)
+                    self._draw_lake(dc, center, wx.BLUE)
                 else:
                     for next_pos in river_tile['connections']:
                         next_center = self.get_hex_center(*next_pos)
                         next_biome = self.biome_manager.get_biome(next_pos)
-                        self._draw_connection_line(dc, center, next_center, next_biome, color)
+                        if next_biome == "Ville":
+                            self._draw_city_river_connection(dc, next_center, center)
+                        else:
+                            self._draw_connection_line(dc, center, next_center, next_biome, wx.BLUE)
         
+        # 4. Handle route tiles
         elif current_biome == "Route":
-            route_tile = self.biome_manager.river_path.get_tile(current_pos)
+            route_tile = self.biome_manager.river_path.get_route_tile(current_pos)
             if route_tile:
                 for next_pos in route_tile['connections']:
                     next_center = self.get_hex_center(*next_pos)
                     next_biome = self.biome_manager.get_biome(next_pos)
-                    self._draw_connection_line(dc, center, next_center, next_biome, color)
+                    if next_biome == "Ville":
+                        self._draw_city_route_connection(dc, next_center, center)
+                    else:
+                        self._draw_route_line(dc, center, next_center, next_biome, wx.Colour(139, 69, 19))
+        
+        # 5. Handle pattern overlays for other biomes
+        elif biome_data["pattern"]:
+            pattern = biome_data["pattern"]
+            if pattern["type"] == "line":
+                dc.SetPen(wx.Pen(pattern["color"], self.LINE_PATTERN_WIDTH))
+                center_x, center_y = center
+                for i in range(0, 6, 2):
+                    start_x = points[i][0]
+                    start_y = points[i][1]
+                    end_x = points[(i + 3) % 6][0]
+                    end_y = points[(i + 3) % 6][1]
+                    dc.DrawLine(int(start_x), int(start_y), int(end_x), int(end_y))
+
+    def _draw_route_line(self, dc: wx.DC, start_center: Tuple[float, float], 
+                        end_center: Tuple[float, float], end_biome: str, color: str) -> None:
+        gc = wx.GraphicsContext.Create(dc)
+        if not gc:
+            return
+        
+        # Create dashed pen for routes
+        dashed_pen = wx.Pen(color, self.LINE_PATTERN_WIDTH)
+        dashed_pen.SetStyle(wx.PENSTYLE_SHORT_DASH)
+        gc.SetPen(dashed_pen)
+    
+        # Draw straight line for routes (simpler than river curves)
+        path = gc.CreatePath()
+        path.MoveToPoint(start_center[0], start_center[1])
+        path.AddLineToPoint(end_center[0], end_center[1])
+    
+        gc.DrawPath(path)
                     
     def _draw_lake(self, dc: wx.DC, center: Tuple[float, float], color: str) -> None:
         import random
@@ -290,3 +335,82 @@ class HexManager:
                     next_center = self.get_hex_center(*next_pos)
                     next_biome = self.biome_manager.get_biome(next_pos)
                     self._draw_connection_line(mem_dc, center, next_center, next_biome, color)
+
+    def find_route_connections(self, col: int, row: int) -> List[Tuple[int, int]]:
+        valid_connections = []
+        current_pos = (col, row)
+        neighbors = self.get_neighbors(col, row)
+
+        # First prioritize connecting to existing route tiles
+        for neighbor in neighbors:
+            if (self.biome_manager.get_biome(neighbor) == "Route" and
+                len(self.biome_manager.river_path.get_route_tile(neighbor)['connections']) < 2):
+                valid_connections.append(neighbor)
+                if len(valid_connections) >= 2:
+                    return valid_connections
+
+        # Then check cities if we still need connections
+        for neighbor in neighbors:
+            if (self.biome_manager.get_biome(neighbor) == "Ville" and
+                neighbor not in valid_connections):
+                valid_connections.append(neighbor)
+                if len(valid_connections) >= 2:
+                    return valid_connections
+
+        return valid_connections
+
+    def draw_city_connections(self, dc, center, city_pos):
+        """Distinct drawing logic for city connections"""
+        connections = self.biome_manager.get_city_connections(city_pos)
+        
+        # Draw river connections with blue circular endpoints
+        for river_pos in connections['river']:
+            next_center = self.get_hex_center(*river_pos)
+            self._draw_city_river_connection(dc, center, next_center)
+            
+        # Draw route connections with brown square endpoints
+        for route_pos in connections['route']:
+            next_center = self.get_hex_center(*route_pos)
+            self._draw_city_route_connection(dc, center, next_center)
+
+    def _draw_city_river_connection(self, dc, city_center, river_center):
+        """City-specific river connection rendering"""
+        gc = wx.GraphicsContext.Create(dc)
+        if not gc:
+            return
+            
+        # Draw thicker blue line with circular endpoint
+        gc.SetPen(wx.Pen(wx.BLUE, int(self.LINE_PATTERN_WIDTH * 1.5)))
+        
+        # Draw main connection line
+        path = gc.CreatePath()
+        path.MoveToPoint(*city_center)
+        path.AddLineToPoint(*river_center)
+        gc.DrawPath(path)
+        
+        # Draw circular endpoint at city
+        radius = self.hex_size * 0.1
+        gc.DrawEllipse(city_center[0] - radius, city_center[1] - radius, 
+                    radius * 2, radius * 2)
+
+    def _draw_city_route_connection(self, dc, city_center, route_center):
+        """City-specific route connection rendering"""
+        gc = wx.GraphicsContext.Create(dc)
+        if not gc:
+            return
+            
+        # Draw brown dashed line with square endpoint
+        brown_pen = wx.Pen(wx.Colour(139, 69, 19), self.LINE_PATTERN_WIDTH)
+        brown_pen.SetStyle(wx.PENSTYLE_SHORT_DASH)
+        gc.SetPen(brown_pen)
+        
+        # Draw main connection line
+        path = gc.CreatePath()
+        path.MoveToPoint(*city_center)
+        path.AddLineToPoint(*route_center)
+        gc.DrawPath(path)
+        
+        # Draw square endpoint at city
+        size = self.hex_size * 0.15
+        gc.DrawRectangle(city_center[0] - size/2, city_center[1] - size/2, 
+                        size, size)

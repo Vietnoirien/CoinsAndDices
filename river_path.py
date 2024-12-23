@@ -100,26 +100,56 @@ class RiverPath:
                             next_tile['connections'] = next_tile['connections'][:2]
                             
     def remove_tile(self, position: tuple) -> None:
-        """Remove a tile and update affected connections"""
-        # Remove from river tiles
+        # Remove from river tiles and update their connections
         self.river_tiles = [tile for tile in self.river_tiles 
-                           if tile['position'] != position]
-        
-        # Update connections that referenced this tile
+                       if tile['position'] != position]
         for tile in self.river_tiles:
             if position in tile['connections']:
                 tile['connections'].remove(position)
-        
-        # Remove from route tiles
+    
+        # Remove from route tiles and update their connections
         self.route_tiles = [tile for tile in self.route_tiles 
-                           if tile['position'] != position]
+                       if tile['position'] != position]
+        for tile in self.route_tiles:
+            if position in tile['connections']:
+                tile['connections'].remove(position)
         
+    def get_route_tile(self, position: tuple) -> dict:
+        """Get route tile data for a specific position"""
+        for tile in self.route_tiles:
+            if tile['position'] == position:
+                return tile
+        return None
+
     def add_route_tile(self, pos, connections):
-        """Add a route tile with its connections"""
-        self.route_tiles.append({
+        hex_manager = self.hex_manager
+        valid_neighbors = hex_manager.get_neighbors(*pos)
+        
+        # Prioritize maintaining existing route connections
+        existing_route_connections = []
+        for neighbor in valid_neighbors:
+            neighbor_tile = self.get_route_tile(neighbor)
+            if neighbor_tile and pos in neighbor_tile['connections']:
+                existing_route_connections.append(neighbor)
+        
+        # Add new connections up to limit
+        remaining_slots = 2 - len(existing_route_connections)
+        new_connections = [c for c in connections if c not in existing_route_connections][:remaining_slots]
+        
+        all_connections = existing_route_connections + new_connections
+        
+        new_tile = {
             'position': pos,
-            'connections': connections
-        })
+            'connections': all_connections
+        }
+        
+        self.route_tiles = [tile for tile in self.route_tiles if tile['position'] != pos]
+        self.route_tiles.append(new_tile)
+        
+        # Ensure bidirectional connections for routes
+        for conn_pos in all_connections:
+            self._ensure_bidirectional_route_connection(pos, conn_pos)
+        
         self._sort_route_path()
         
     def _sort_river_path(self):
@@ -204,3 +234,60 @@ class RiverPath:
     def _pos_to_key(self, position):
         """Convert position tuple to string key"""
         return str(position)
+
+    def _ensure_bidirectional_route_connection(self, pos1, pos2):
+        """Ensures both route tiles reference each other in their connections"""
+        tile1 = self.get_route_tile(pos1)
+        tile2 = self.get_route_tile(pos2)
+
+        if not tile2:
+            tile2 = {
+                'position': pos2,
+                'connections': [pos1]
+            }
+            self.route_tiles.append(tile2)
+        elif pos1 not in tile2['connections'] and len(tile2['connections']) < 2:
+            tile2['connections'].append(pos1)
+        
+        if pos2 not in tile1['connections'] and len(tile1['connections']) < 2:
+            tile1['connections'].append(pos2)
+
+    def get_connected_route_segments(self) -> list:
+        """Get list of connected route segments for rendering"""
+        segments = []
+        visited = set()
+        
+        for tile in self.route_tiles:
+            pos_key = self._pos_to_key(tile['position'])
+            if pos_key not in visited:
+                segment = self._trace_route_segment(tile['position'], visited)
+                if segment:
+                    segments.append(segment)
+        return segments
+
+    def _trace_route_segment(self, start_pos: tuple, visited: set) -> list:
+        """Trace a continuous route segment starting from given position"""
+        segment = []
+        current_pos = start_pos
+        
+        while current_pos:
+            pos_key = self._pos_to_key(current_pos)
+            if pos_key in visited:
+                break
+                
+            visited.add(pos_key)
+            current_tile = self.get_route_tile(current_pos)
+            if not current_tile:
+                break
+                
+            segment.append(current_tile)
+            # Find next unvisited connection
+            next_pos = None
+            for conn_pos in current_tile['connections']:
+                conn_key = self._pos_to_key(conn_pos)
+                if conn_key not in visited:
+                    next_pos = conn_pos
+                    break
+            current_pos = next_pos
+                
+        return segment
