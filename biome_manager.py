@@ -9,6 +9,7 @@ class BiomeManager:
     def __init__(self, hex_manager):
         self.setup_logger()
         self.hex_manager = hex_manager
+        self.drawing_manager = hex_manager.drawing_manager
         self.hex_biomes = {}
         self.biomes = {
             "Marais": {"primary": wx.Colour(0, 100, 100), "pattern": None},
@@ -156,11 +157,9 @@ class BiomeManager:
         if self.hex_manager.last_clicked_hex:
             current_pos = self.hex_manager.last_clicked_hex
             
-            # Remove existing tile
             self.river_path.remove_tile(current_pos)
             self.set_biome(current_pos, biome_name)
             
-            # Handle both river and route connections
             if biome_name == "Riviere":
                 valid_connections = self.hex_manager.find_river_connections(*current_pos)
                 self.river_path.add_river_tile(current_pos, valid_connections)
@@ -168,11 +167,10 @@ class BiomeManager:
                 valid_connections = self.hex_manager.find_route_connections(*current_pos)
                 self.river_path.add_route_tile(current_pos, valid_connections)
                 
-            # Update neighbors for both types
             self._update_neighbor_connections(current_pos)
-            self.hex_manager.invalidate_river_buffer()
+            self.drawing_manager.invalidate_buffer()
             self.hex_manager.canvas.Refresh()
-
+    
     def _update_neighbor_connections(self, current_pos):
         neighbors = self.hex_manager.get_neighbors(*current_pos)
         for neighbor in neighbors:

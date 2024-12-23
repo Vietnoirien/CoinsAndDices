@@ -1,8 +1,9 @@
 class RiverPath:
-    def __init__(self, hex_manager=None):
+    def __init__(self, hex_manager):
+        self.hex_manager = hex_manager
+        self.drawing_manager = hex_manager.drawing_manager
         self.river_tiles = []
-        self.route_tiles = []
-        self.hex_manager = hex_manager      
+        self.route_tiles = []      
           
     def get_tile(self, position: tuple) -> dict:
         """Get river tile data for a specific position"""
@@ -35,6 +36,7 @@ class RiverPath:
         
         self.river_tiles = [tile for tile in self.river_tiles if tile['position'] != pos]
         self.river_tiles.append(new_tile)
+        self.drawing_manager.invalidate_buffer()
         
         # Ensure bidirectional connections
         for conn_pos in all_connections:
@@ -42,6 +44,7 @@ class RiverPath:
         
         self._sort_river_path()
         self.validate_river_network()
+        self.drawing_manager.invalidate_buffer()
         
     def _ensure_bidirectional_connection(self, pos1, pos2):
         """Ensures both tiles reference each other in their connections"""
@@ -113,6 +116,7 @@ class RiverPath:
         for tile in self.route_tiles:
             if position in tile['connections']:
                 tile['connections'].remove(position)
+        self.drawing_manager.invalidate_buffer()
         
     def get_route_tile(self, position: tuple) -> dict:
         """Get route tile data for a specific position"""
@@ -145,6 +149,7 @@ class RiverPath:
         
         self.route_tiles = [tile for tile in self.route_tiles if tile['position'] != pos]
         self.route_tiles.append(new_tile)
+        self.drawing_manager.invalidate_buffer()
         
         # Ensure bidirectional connections for routes
         for conn_pos in all_connections:

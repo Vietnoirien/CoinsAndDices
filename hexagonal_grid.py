@@ -8,6 +8,7 @@ from biome_manager import BiomeManager
 from hex_manager import HexManager
 from panel_manager import PanelManager
 from companion_edit import CompanionEditor
+from drawing_manager import DrawingManager
 
 class HexagonalGrid(wx.Frame):
     def __init__(self):
@@ -21,6 +22,7 @@ class HexagonalGrid(wx.Frame):
         self.grid_height = 14
     
         self.hex_manager = HexManager(self.grid_width, self.grid_height)
+        self.drawing_manager = self.hex_manager.drawing_manager
         self.calculate_hex_size()
 
         self.panel = wx.Panel(self)
@@ -67,6 +69,17 @@ class HexagonalGrid(wx.Frame):
         self.Center()
         self.Show()
 
+    def on_paint(self, event):
+        dc = wx.PaintDC(self.canvas)
+        for row in range(self.grid_height):
+            for col in range(self.grid_width):
+                center = self.hex_manager.get_hex_center(col, row)
+                points = self.hex_manager.get_hex_points(*center)
+                pos = (col, row)
+                biome_name = self.biome_manager.get_biome(pos)
+                biome_data = self.biome_manager.get_biome_data(biome_name)
+                self.drawing_manager.draw_hex(dc, points, biome_data, col, row)
+
     def calculate_hex_size(self):
         width, height = self.GetSize()
         canvas_width = width * 0.6
@@ -80,19 +93,7 @@ class HexagonalGrid(wx.Frame):
         height_based_size = usable_height / ((self.grid_height + 0.5) * math.sqrt(3))
         
         self.hex_manager.hex_size = min(width_based_size, height_based_size)
-
-    def on_paint(self, event):
-        dc = wx.PaintDC(self.canvas)
-        for row in range(self.grid_height):
-            for col in range(self.grid_width):
-                center = self.hex_manager.get_hex_center(col, row)
-                points = self.hex_manager.get_hex_points(*center)
-                pos = (col, row)
-            
-                biome_name = self.biome_manager.get_biome(pos)
-                biome_data = self.biome_manager.get_biome_data(biome_name)
-                self.hex_manager.draw_hex(dc, points, biome_data, col, row)
-                   
+                 
     def on_resize(self, event):
         self.calculate_hex_size()
         self.canvas.Refresh()
