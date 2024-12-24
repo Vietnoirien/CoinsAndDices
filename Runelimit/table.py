@@ -7,6 +7,7 @@ from managers.biome_manager import BiomeManager
 from managers.drawing_manager import DrawingManager
 from mov_dice import MovementPhase
 from events import TerrainHoverEvent, EVT_TERRAIN_HOVER
+from managers.panel_manager import PanelManager
 
 @dataclass
 class PlayerToken:
@@ -43,6 +44,7 @@ class GameTable(wx.Frame):
         self.hex_manager = HexManager(self.grid_width, self.grid_height)
         self.drawing_manager = DrawingManager(self.hex_manager)
         self.biome_manager = BiomeManager(self.hex_manager)
+        self.panel_manager = PanelManager(self)  # Nouveau manager
         
         self.hex_manager.drawing_manager = self.drawing_manager
         self.hex_manager.biome_manager = self.biome_manager
@@ -65,32 +67,26 @@ class GameTable(wx.Frame):
                 color=colors[i],
                 name=player.name
             ))
-
     def _setup_ui(self):
         self.hex_manager.calculate_hex_size(self.GetSize().width, self.GetSize().height)
-        self.panel = wx.Panel(self)
-        
-        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        left_panel = wx.Panel(self.panel)
-        left_sizer = wx.BoxSizer(wx.VERTICAL)
-        
-        self.canvas = wx.Panel(left_panel)
-        self.canvas.SetBackgroundColour(wx.WHITE)
-        
-        left_sizer.Add(self.canvas, 1, wx.EXPAND)
-        left_panel.SetSizer(left_sizer)
-        
+    
+        # Utilisation du PanelManager
+        main_panel, main_sizer = self.panel_manager.create_main_panel()
+        self.panel = main_panel
+        self.canvas = self.panel_manager.get_canvas()
+    
+        # Création de la phase de mouvement
         self.movement_phase = MovementPhase(self.panel, self.players[0].name)
         self.movement_phase.set_player(self.players[0])
-        
-        main_sizer.Add(left_panel, 2, wx.EXPAND|wx.ALL, 5)
-        main_sizer.Add(self.movement_phase, 1, wx.EXPAND|wx.ALL, 5)
-        
+    
+        # Ajout de la phase de mouvement
+        self.panel_manager.add_movement_phase(self.movement_phase)
+    
         self.panel.SetSizer(main_sizer)
-
     def _bind_events(self):
-        self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
-        self.canvas.Bind(wx.EVT_LEFT_DOWN, self.on_hex_click)
+        canvas = self.panel_manager.get_canvas()
+        canvas.Bind(wx.EVT_PAINT, self.on_paint)
+        canvas.Bind(wx.EVT_LEFT_DOWN, self.on_hex_click)
         self.Bind(wx.EVT_SIZE, self.on_resize)
         self.Bind(EVT_TERRAIN_HOVER, self.on_terrain_hover)
 
