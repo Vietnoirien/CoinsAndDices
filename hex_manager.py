@@ -18,6 +18,7 @@ class HexManager:
         self.biome_manager = None
         self.canvas = None
         self.last_clicked_hex = None
+        self.highlighted_hex = None
         self.canvas_width = 0
         self.canvas_height = 0
         self.drawing_manager = DrawingManager(self)
@@ -128,3 +129,8 @@ class HexManager:
                     return valid_connections
 
         return valid_connections
+
+    def set_highlighted_hex(self, hex_pos):
+        self.highlighted_hex = hex_pos
+        if self.canvas:
+            self.canvas.Refresh()

@@ -129,14 +129,21 @@ class GameTable(wx.Frame):
             # Verrouiller le dé utilisé
             self.movement_phase.lock_selected_face()
             self.canvas.Refresh()
+            
     def on_terrain_hover(self, event):
         if event.is_selected:
             player = self.players[0]
             self.valid_moves = set()
             adjacent_hexes = self.hex_manager.get_neighbors(*player.position)
+            
             for hex_pos in adjacent_hexes:
-                if self.biome_manager.get_biome(hex_pos) == event.terrain:
+                # Permettre l'entrée dans une ville avec n'importe quelle face
+                if self.biome_manager.get_biome(hex_pos) == "Ville":
                     self.valid_moves.add(hex_pos)
+                # Comportement normal pour les autres terrains
+                elif self.biome_manager.get_biome(hex_pos) == event.terrain:
+                    self.valid_moves.add(hex_pos)
+                    
             self.hex_manager.set_highlighted_hexes(self.valid_moves)
         else:
             # Garder le comportement de survol existant
@@ -152,6 +159,7 @@ class GameTable(wx.Frame):
                 self.hex_manager.set_highlighted_hexes(set())
     
         self.canvas.Refresh()
+
     def load_game_data(self):
         try:
             # BiomeManager a déjà sa propre méthode de chargement

@@ -12,6 +12,7 @@ class MovementPhase(wx.Panel):
         self.last_face_used = None
         self.player = None  # Référence au joueur
         self.starting_position = None
+        self.movement_history = []  # Nouvelle liste pour stocker l'historique des mouvements
     
         # Création du sizer principal
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -74,14 +75,26 @@ class MovementPhase(wx.Panel):
     
         self.rerolls_used = set()
         self.parent = parent
+
     def lock_selected_face(self):
         if self.selected_face:
-            # Si c'est le premier mouvement, on sauvegarde la position de départ
-            if not self.player_movements:
+            # Capturer la position de départ AVANT tout mouvement
+            if not self.player_movements and self.starting_position is None:
                 self.starting_position = self.GetTopLevelParent().get_player_position()
+                print(f"Setting starting position to: {self.starting_position}")
                 
             dice_panel = self.selected_face.GetParent()
             dice_btn = dice_panel.GetChildren()[0]
+            
+            # Stocker toutes les informations nécessaires pour l'annulation
+            movement_info = {
+                'face': self.selected_face,
+                'movement': self.selected_face.GetLabel(),
+                'dice_panel': dice_panel,
+                'dice_btn': dice_btn,
+                'position': self.player.position
+            }
+            self.movement_history.append(movement_info)
             
             # Sauvegarder l'état avant le verrouillage
             self.last_face_used = self.selected_face
@@ -105,10 +118,12 @@ class MovementPhase(wx.Panel):
             
             # Stocker le mouvement
             self.player_movements.append(self.selected_face.GetLabel())
-            self.selected_face = None            
+            self.selected_face = None    
+    
     def create_dice_panel(self, index):
         dice_panel = wx.Panel(self.dice_results)
         dice_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        face_sizer = wx.BoxSizer(wx.HORIZONTAL)  # Nouveau sizer horizontal pour les faces
     
         face = random.choice(self.faces)
     
@@ -116,16 +131,14 @@ class MovementPhase(wx.Panel):
         dice_btn = wx.Button(dice_panel, label=f"Dé {index+1}")
         dice_btn.SetBackgroundColour(wx.WHITE)
         dice_btn.dice_index = index
-        # Bouton de relance
-        reroll_btn = wx.Button(dice_panel, label="↻")
-        reroll_btn.dice_index = index  # Cette ligne est cruciale
         # Création des boutons de face
         face_buttons = []
         for terrain in face:
             btn = wx.Button(dice_panel, label=terrain)
             btn.SetBackgroundColour(wx.WHITE)
             face_buttons.append(btn)
-            
+            face_sizer.Add(btn, 0, wx.ALL|wx.CENTER, 2)  # Espacement de 2 pixels entre les faces
+
             def create_face_handler(buttons, clicked_btn, dice_button):
                 def on_click(evt):
                     if dice_button.GetBackgroundColour() != wx.RED:
@@ -162,18 +175,18 @@ class MovementPhase(wx.Panel):
             hover, leave = create_hover_handler(terrain)
             btn.Bind(wx.EVT_ENTER_WINDOW, hover)
             btn.Bind(wx.EVT_LEAVE_WINDOW, leave)
-            dice_sizer.Add(btn, 0, wx.ALL, 5)
-            
-        def on_reroll(evt):
-            btn = evt.GetEventObject()
-            if btn.dice_index not in self.rerolls_used:
-                self.rerolls_used.add(btn.dice_index)
-                btn.SetBackgroundColour(wx.LIGHT_GREY)
-                btn.Disable()
-                self.reroll_single_die(btn.dice_index)
+
+
+#        def on_reroll(evt):
+#            btn = evt.GetEventObject()
+#            if btn.dice_index not in self.rerolls_used:
+#                self.rerolls_used.add(btn.dice_index)
+#                btn.SetBackgroundColour(wx.LIGHT_GREY)
+#                btn.Disable()
+#                self.reroll_single_die(btn.dice_index)
         
-        reroll_btn.Bind(wx.EVT_BUTTON, on_reroll)
-        
+#        reroll_btn.Bind(wx.EVT_BUTTON, on_reroll)
+      
         def on_dice_click(evt):
             current_color = dice_btn.GetBackgroundColour()
             new_color = wx.RED if current_color == wx.WHITE else wx.WHITE
@@ -184,7 +197,7 @@ class MovementPhase(wx.Panel):
         dice_btn.Bind(wx.EVT_BUTTON, on_dice_click)
         
         dice_sizer.Insert(0, dice_btn, 0, wx.ALL|wx.CENTER, 5)
-        dice_sizer.Add(reroll_btn, 0, wx.ALL|wx.CENTER, 5)
+        dice_sizer.Add(face_sizer, 0, wx.ALL|wx.CENTER, 5)  # Ajout du face_sizer
         
         dice_panel.SetSizer(dice_sizer)
         return dice_panel
@@ -203,10 +216,15 @@ class MovementPhase(wx.Panel):
         self.dice_panels = []
         self.selected_face = None
         
-        for i in range(5):  # 5 dés par défaut pour Runebound
+        # Créer les 5 dés
+        for i in range(5):
             dice_panel = self.create_dice_panel(i)
             self.dice_panels.append(dice_panel)
             self.results_sizer.Add(dice_panel, 0, wx.EXPAND|wx.ALL, 5)
+        
+        # Désactiver et cacher le bouton de lancement
+        self.roll_btn.Disable()
+        self.roll_btn.Hide()
         
         self.results_sizer.Layout()
         self.dice_results.FitInside()
@@ -214,37 +232,43 @@ class MovementPhase(wx.Panel):
     def next_turn(self):
         self.turn_count += 1
         self.turn_text.SetLabel(f"Tour {self.turn_count}")
-        
+    
     def cancel_last_move(self):
-        if self.last_face_used and self.last_movement:
-            # Restaurer la position du joueur
+        if self.movement_history:  # Utiliser movement_history au lieu de last_face_used
+            # Récupérer le dernier mouvement de l'historique
+            last_move = self.movement_history.pop()
+    
+            # Restaurer la position
+            top_window = self.GetTopLevelParent()
             if len(self.player_movements) == 1:
                 self.player.position = self.starting_position
+                top_window.players[0].position = self.starting_position
             else:
-                # Logique existante pour les autres mouvements
-                pass
-            
-            # Reste du code d'annulation existant
-            dice_panel = self.last_face_used.GetParent()
-            dice_btn = dice_panel.GetChildren()[0]
+                # Restaurer à la position précédente
+                if len(self.movement_history) > 0:
+                    previous_move = self.movement_history[-1]
+                    self.player.position = previous_move['position']
+                    top_window.players[0].position = previous_move['position']
+        
+            # Réinitialiser les éléments visuels
+            dice_btn = last_move['dice_btn']
             dice_btn.SetBackgroundColour(wx.WHITE)
             dice_btn.Enable()
-        
-            reroll_btn = dice_panel.GetChildren()[-1]
+    
+            reroll_btn = last_move['dice_panel'].GetChildren()[-1]
             if dice_btn.dice_index in self.rerolls_used:
                 self.rerolls_used.remove(dice_btn.dice_index)
             reroll_btn.Enable()
             reroll_btn.SetBackgroundColour(wx.WHITE)
-        
-            self.last_face_used.Enable()
-            self.last_face_used.SetBackgroundColour(wx.WHITE)
-        
+    
+            last_move['face'].Enable()
+            last_move['face'].SetBackgroundColour(wx.WHITE)
+    
             if self.player_movements:
                 self.player_movements.pop()
-            
-            self.last_face_used = None
-            self.last_movement = None    
-
+        
+            # Forcer le rafraîchissement du canvas
+            top_window.canvas.Refresh()
     def on_cancel_move(self, event):
         self.cancel_last_move()
 

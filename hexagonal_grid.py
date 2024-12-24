@@ -9,6 +9,7 @@ from hex_manager import HexManager
 from panel_manager import PanelManager
 from companion_edit import CompanionEditor
 from drawing_manager import DrawingManager
+from event_manager import EventManager
 
 class HexagonalGrid(wx.Frame):
     def __init__(self):
@@ -23,6 +24,7 @@ class HexagonalGrid(wx.Frame):
     
         self.hex_manager = HexManager(self.grid_width, self.grid_height)
         self.drawing_manager = self.hex_manager.drawing_manager
+        self.event_manager = EventManager(self.hex_manager)
         self.calculate_hex_size()
 
         self.panel = wx.Panel(self)
@@ -41,12 +43,14 @@ class HexagonalGrid(wx.Frame):
         self.buttons_panel = wx.Panel(right_panel)
         self.panel_manager = PanelManager(self)
         self.companion_editor = CompanionEditor(right_panel)
+        self.event_editor = self.event_manager.create_event_panel(right_panel)
 
         self.panel_manager.register_panels(
             self.buttons_panel,
             self.char_editor,
             self.monster_editor,
             self.companion_editor,
+            self.event_editor,
             right_panel
         )
 
@@ -54,9 +58,11 @@ class HexagonalGrid(wx.Frame):
         main_sizer.Add(right_panel, 2, wx.EXPAND|wx.ALL|wx.GROW, 5)
         self.panel.SetSizer(main_sizer)
     
+        # Cacher tous les panneaux initialement
         self.char_editor.Hide()
         self.monster_editor.Hide()
         self.companion_editor.Hide()
+        self.event_editor.Hide()
 
         self.right_panel = right_panel
         self.hex_manager.canvas = self.canvas
@@ -118,8 +124,15 @@ class HexagonalGrid(wx.Frame):
         hex_pos = self.hex_manager.get_clicked_hex(pos.x, pos.y)
         if hex_pos:
             self.hex_manager.last_clicked_hex = hex_pos
+            if self.event_editor.IsShown():
+                self.hex_manager.set_highlighted_hex(hex_pos)
+                event_type, event_desc = self.event_manager.get_tile_event(hex_pos)
+                self.event_manager.event_text.SetValue(event_desc)
+                self.event_manager.event_choice.SetStringSelection(event_type)
+                # Update tile info
+                self.event_manager.update_tile_info(hex_pos)
             self.canvas.Refresh()
-
+            
     def on_right_click(self, event):
         pos = event.GetPosition()
         hex_pos = self.hex_manager.get_clicked_hex(pos.x, pos.y)

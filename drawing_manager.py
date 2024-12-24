@@ -17,17 +17,32 @@ class DrawingManager:
             self.river_buffer = wx.Bitmap(self.hex_manager.canvas_width, 
                                         self.hex_manager.canvas_height)
         self.river_dirty = True
-
+        
     def draw_hex(self, dc: wx.DC, points: List[Tuple[float, float]], biome_data: Dict, col: int, row: int) -> None:
         current_pos = (col, row)
-        current_biome = self.hex_manager.biome_manager.get_biome(current_pos)
-        center = self.hex_manager.get_hex_center(col, row)
+    
+        # Définir l'épaisseur du contour en fonction de la sélection
+        line_width = 3 if current_pos == self.hex_manager.highlighted_hex else 1
+        dc.SetPen(wx.Pen(wx.BLACK, line_width))
+    
+        # Si l'hexagone est surligné, ajouter un effet de surbrillance
+        if current_pos == self.hex_manager.highlighted_hex:
+            # Dessiner un contour de surbrillance
+            highlight_pen = wx.Pen(wx.Colour(255, 255, 0), 2)  # Jaune
+            dc.SetPen(highlight_pen)
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
         
-        # Base hexagon
-        dc.SetPen(wx.Pen(wx.BLACK, 1))
+            # Revenir au style normal pour le reste du dessin
+            dc.SetPen(wx.Pen(wx.BLACK, line_width))
+        
+        # Continuer avec le dessin normal de l'hexagone
         dc.SetBrush(wx.Brush(biome_data["primary"]))
         dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
-        
+    
+        current_biome = self.hex_manager.biome_manager.get_biome(current_pos)
+        center = self.hex_manager.get_hex_center(col, row)
+    
         # Handle specific biome types
         if current_biome == "Ville":
             self._draw_city(dc, center)
