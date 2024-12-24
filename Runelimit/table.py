@@ -36,9 +36,20 @@ class GameTable(wx.Frame):
         self.selected_terrain = None
         self.valid_moves = set()  # Pour stocker les positions valides
         
+        from managers.event_manager import EventManager
+        self.event_manager = EventManager(self)
+        
         self._bind_events()
         self.Center()
         self.Show()
+
+    def start_event_phase(self):
+        if self.event_manager.check_current_position():
+            # Gérer l'événement trouvé
+            pass
+        else:
+            # Passer au tour suivant
+            self.movement_phase.next_turn()
 
     def _initialize_managers(self):
         self.hex_manager = HexManager(self.grid_width, self.grid_height)
