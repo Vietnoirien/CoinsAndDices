@@ -70,19 +70,17 @@ class GameTable(wx.Frame):
     def _setup_ui(self):
         self.hex_manager.calculate_hex_size(self.GetSize().width, self.GetSize().height)
     
-        # Utilisation du PanelManager
         main_panel, main_sizer = self.panel_manager.create_main_panel()
         self.panel = main_panel
         self.canvas = self.panel_manager.get_canvas()
-    
-        # Création de la phase de mouvement
-        self.movement_phase = MovementPhase(self.panel, self.players[0].name)
+
+        # Création de la phase de mouvement avec le panel_manager
+        self.movement_phase = MovementPhase(self.panel_manager, self.players[0].name)
         self.movement_phase.set_player(self.players[0])
-    
-        # Ajout de la phase de mouvement
-        self.panel_manager.add_movement_phase(self.movement_phase)
-    
+        self.panel_manager.add_movement_phase(self.movement_phase.components['panel'])
+
         self.panel.SetSizer(main_sizer)
+        
     def _bind_events(self):
         canvas = self.panel_manager.get_canvas()
         canvas.Bind(wx.EVT_PAINT, self.on_paint)
