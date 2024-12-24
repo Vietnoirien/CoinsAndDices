@@ -255,6 +255,7 @@ class CompanionEditor(wx.Panel):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
+                    print(content)
                     companions = self.parse_companions_file(content)
                     
                     success_count = 0

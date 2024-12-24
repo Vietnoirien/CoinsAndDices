@@ -1,0 +1,14 @@
+{
+  "name": "Jacques l'Argenté",
+  "golds_cost": 6,
+  "pv": 3,
+  "fatigue": 0,
+  "effect": "Vous pouvez acheter des objets pour 1 de moins que leur coût (minimum 1). #effect",
+  "description": "\"Une épée dans une main, une bière dans l'autre, et un sac d'or à ma ceinture. La vie est belle!",
+  "distance": 2,
+  "distance_degat": 1,
+  "melee": 4,
+  "melee_degat": 2,
+  "magie": 0,
+  "magie_degat": 1
+}
