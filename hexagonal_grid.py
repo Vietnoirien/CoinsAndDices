@@ -25,6 +25,7 @@ class HexagonalGrid(wx.Frame):
         self.hex_manager = HexManager(self.grid_width, self.grid_height)
         self.drawing_manager = self.hex_manager.drawing_manager
         self.event_manager = EventManager(self.hex_manager)
+        self.hex_manager.event_manager = self.event_manager  # Direct attribute assignment instead of setter
         self.calculate_hex_size()
 
         self.panel = wx.Panel(self)

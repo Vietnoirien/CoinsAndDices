@@ -162,14 +162,14 @@ class CharacterEditor(wx.Panel):
             'level': ('Niveau', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=1)),
             'exp': ('Expérience', lambda p: wx.SpinCtrl(p, min=0, max=10000, initial=0)),
             'gold': ('Or', lambda p: wx.SpinCtrl(p, min=0, max=10000, initial=3)),
-            'pv': ('Points de Vie', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=4)),
-            'fatigue': ('Fatigue', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=3)),
-            'distance': ('Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'distance_degat': ('Dégâts Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'melee': ('Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'melee_degat': ('Dégâts Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'magie': ('Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
-            'magie_degat': ('Dégâts Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0))
+            'pv': ('❤️ Points de Vie', lambda p: wx.SpinCtrl(p, min=1, max=100, initial=4)),
+            'fatigue': ('🔥 Fatigue', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=3)),
+            'distance': ('🏹 Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'distance_degat': ('🏹 Dégâts Distance', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'melee': ('⚔️ Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'melee_degat': ('⚔️ Dégâts Mêlée', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'magie': ('☯️ Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0)),
+            'magie_degat': ('☯️ Dégâts Magie', lambda p: wx.SpinCtrl(p, min=0, max=100, initial=0))
         }
         
         self.controls = {}

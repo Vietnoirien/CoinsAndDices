@@ -8,13 +8,14 @@ class HexManager:
     CANVAS_WIDTH_RATIO = 0.6
     GRID_MARGIN = 50
 
-    def __init__(self, grid_width, grid_height):
+    def __init__(self, grid_width: int, grid_height: int):
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.selected_hex = None
         self.highlighted_hexes = set()
         self.drawing_manager = None
         self.biome_manager = None
+        self.event_manager = None  # Add event manager attribute
         self.canvas_width = 0
         self.canvas_height = 0
 
@@ -96,3 +97,6 @@ class HexManager:
             if self.biome_manager.get_biome(hex_pos) == terrain_type:
                 valid_moves.add(hex_pos)
         return valid_moves
+
+    def set_event_manager(self, event_manager):
+        self.event_manager = event_manager

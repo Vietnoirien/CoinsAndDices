@@ -20,11 +20,11 @@ class DrawingManager:
         
     def draw_hex(self, dc: wx.DC, points: List[Tuple[float, float]], biome_data: Dict, col: int, row: int) -> None:
         current_pos = (col, row)
-    
+
         # Définir l'épaisseur du contour en fonction de la sélection
         line_width = 3 if current_pos == self.hex_manager.highlighted_hex else 1
         dc.SetPen(wx.Pen(wx.BLACK, line_width))
-    
+
         # Si l'hexagone est surligné, ajouter un effet de surbrillance
         if current_pos == self.hex_manager.highlighted_hex:
             # Dessiner un contour de surbrillance
@@ -32,17 +32,17 @@ class DrawingManager:
             dc.SetPen(highlight_pen)
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
-        
+    
             # Revenir au style normal pour le reste du dessin
             dc.SetPen(wx.Pen(wx.BLACK, line_width))
-        
+    
         # Continuer avec le dessin normal de l'hexagone
         dc.SetBrush(wx.Brush(biome_data["primary"]))
         dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
-    
+
         current_biome = self.hex_manager.biome_manager.get_biome(current_pos)
         center = self.hex_manager.get_hex_center(col, row)
-    
+
         # Handle specific biome types
         if current_biome == "Ville":
             self._draw_city(dc, center)
@@ -54,6 +54,13 @@ class DrawingManager:
             self._draw_swamp(dc, center)
         elif biome_data["pattern"]:
             self._draw_pattern_overlay(dc, points, biome_data["pattern"])
+
+        # Après avoir dessiné l'hexagone et ses éléments, vérifier s'il y a un événement
+        event_type, _ = self.hex_manager.event_manager.get_tile_event(current_pos)
+    
+        if event_type.startswith("Tier"):
+            center = self.hex_manager.get_hex_center(col, row)
+            self._draw_event_marker(dc, center, event_type)
 
     def _draw_city(self, dc: wx.DC, center: Tuple[float, float]) -> None:
         gc = wx.GraphicsContext.Create(dc)
@@ -279,3 +286,31 @@ class DrawingManager:
             dc.DrawCircle(int(dot_x), int(dot_y), int(dot_size))
 
         return swamp_points
+
+    def _draw_event_marker(self, dc: wx.DC, center: Tuple[float, float], event_type: str) -> None:
+        # Définir les couleurs pour chaque tier
+        tier_colors = {
+            "Tier1": wx.Colour(0, 255, 0),    # Vert
+            "Tier2": wx.Colour(0, 0, 255),    # Bleu
+            "Tier3": wx.Colour(255, 255, 0),  # Jaune
+            "Tier4": wx.Colour(255, 0, 0)     # Rouge
+        }
+        
+        if event_type not in tier_colors:
+            return
+            
+        # Taille du diamant proportionnelle à la taille de l'hexagone
+        size = self.hex_manager.hex_size * 0.3
+        
+        # Points du diamant
+        points = [
+            (center[0], center[1] - size),  # Haut
+            (center[0] + size, center[1]),  # Droite
+            (center[0], center[1] + size),  # Bas
+            (center[0] - size, center[1])   # Gauche
+        ]
+        
+        # Dessiner le diamant
+        dc.SetPen(wx.Pen(tier_colors[event_type], 2))
+        dc.SetBrush(wx.Brush(tier_colors[event_type]))
+        dc.DrawPolygon([wx.Point(int(x), int(y)) for x, y in points])
