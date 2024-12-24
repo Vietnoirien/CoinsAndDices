@@ -35,69 +35,77 @@ class PanelManager:
         self.panels['canvas'] = canvas
         
         return main_panel, self.main_sizer
-
+    
     def create_movement_panel(self, player_name):
         movement_panel = wx.Panel(self.panels['main'])
         main_sizer = wx.BoxSizer(wx.VERTICAL)
-        
+
+        # Content sizer for main elements
+        content_sizer = wx.BoxSizer(wx.VERTICAL)
+
         # Tour
         turn_box = wx.StaticBox(movement_panel, label="Tour")
         turn_sizer = wx.StaticBoxSizer(turn_box, wx.VERTICAL)
         turn_text = wx.StaticText(movement_panel, label=f"Tour 1")
         turn_sizer.Add(turn_text, 0, wx.ALL|wx.CENTER, 5)
-        main_sizer.Add(turn_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        content_sizer.Add(turn_sizer, 0, wx.EXPAND|wx.ALL, 5)
 
         # Joueur
         player_box = wx.StaticBox(movement_panel, label="Joueur actif")
         player_sizer = wx.StaticBoxSizer(player_box, wx.VERTICAL)
         player_text = wx.StaticText(movement_panel, label=player_name)
         player_sizer.Add(player_text, 0, wx.ALL|wx.CENTER, 5)
-        main_sizer.Add(player_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        content_sizer.Add(player_sizer, 0, wx.EXPAND|wx.ALL, 5)
 
         # Phase
         phase_box = wx.StaticBox(movement_panel, label="Phase")
         phase_sizer = wx.StaticBoxSizer(phase_box, wx.VERTICAL)
         phase_text = wx.StaticText(movement_panel, label="Mouvement")
         phase_sizer.Add(phase_text, 0, wx.ALL|wx.CENTER, 5)
-        main_sizer.Add(phase_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        content_sizer.Add(phase_sizer, 0, wx.EXPAND|wx.ALL, 5)
 
-        # Dés
-        dice_box = wx.StaticBox(movement_panel, label="Dés de mouvement")
-        dice_sizer = wx.StaticBoxSizer(dice_box, wx.VERTICAL)
-        
-        # Résultats des dés
-        dice_results = wx.ScrolledWindow(movement_panel)
-        dice_results.SetScrollRate(0, 20)
-        results_sizer = wx.BoxSizer(wx.VERTICAL)
-        dice_results.SetSizer(results_sizer)
-        dice_sizer.Add(dice_results, 1, wx.EXPAND|wx.ALL, 5)
-        
-        main_sizer.Add(dice_sizer, 1, wx.EXPAND|wx.ALL, 5)
-
-        # Boutons
+        # Actions directement après la phase
         button_box = wx.StaticBox(movement_panel, label="Actions")
         button_sizer = wx.StaticBoxSizer(button_box, wx.VERTICAL)
         roll_btn = wx.Button(movement_panel, label="Lancer les dés")
         cancel_btn = wx.Button(movement_panel, label="Annuler le mouvement")
         cancel_btn.Hide()
-        
         button_sizer.Add(roll_btn, 0, wx.EXPAND|wx.ALL, 5)
         button_sizer.Add(cancel_btn, 0, wx.EXPAND|wx.ALL, 5)
-        main_sizer.Add(button_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        content_sizer.Add(button_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        # Dés
+        dice_box = wx.StaticBox(movement_panel, label="Dés de mouvement")
+        dice_sizer = wx.StaticBoxSizer(dice_box, wx.VERTICAL)
 
+        # Résultats des dés
+        dice_results = wx.ScrolledWindow(movement_panel)
+        dice_results.SetScrollRate(0, 20)
+        results_sizer = wx.BoxSizer(wx.VERTICAL)
+        dice_results.SetSizer(results_sizer)
+        dice_sizer.Add(dice_results, 2, wx.EXPAND|wx.ALL, 5)
+        # Create confirm button
+        confirm_box = wx.StaticBox(movement_panel, label="Confirmation")
+        confirm_sizer = wx.StaticBoxSizer(confirm_box, wx.VERTICAL)
+        confirm_btn = wx.Button(confirm_box, label="Confirmer mouvement")
+        confirm_btn.Hide()
+        confirm_sizer.Add(confirm_btn, 0, wx.EXPAND|wx.ALL, 5)
+        content_sizer.Add(confirm_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        content_sizer.Add(dice_sizer, 2, wx.EXPAND|wx.ALL, 5)
+
+        # Supprimer la section bottom_section qui n'est plus nécessaire
+        main_sizer.Add(content_sizer, 1, wx.EXPAND)
         movement_panel.SetSizer(main_sizer)
-        
-        return {
-            'panel': movement_panel,
-            'turn_text': turn_text,
+
+        return {            'panel': movement_panel,            'turn_text': turn_text,
             'player_text': player_text,
             'phase_text': phase_text,
             'dice_results': dice_results,
             'results_sizer': results_sizer,
             'roll_btn': roll_btn,
-            'cancel_btn': cancel_btn
+            'cancel_btn': cancel_btn,
+            'confirm_btn': confirm_btn
         }
-
+    
     def create_dice_panel(self, dice_results, index, movement_phase):
         dice_panel = wx.Panel(dice_results)
         dice_sizer = wx.BoxSizer(wx.HORIZONTAL)

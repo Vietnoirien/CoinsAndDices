@@ -21,6 +21,7 @@ class MovementPhase:
         
         self.components['roll_btn'].Bind(wx.EVT_BUTTON, self.on_roll_dice)
         self.components['cancel_btn'].Bind(wx.EVT_BUTTON, self.on_cancel_move)
+        self.components['confirm_btn'].Bind(wx.EVT_BUTTON, self.on_confirm_movement)
 
     def lock_selected_face(self):
         if self.selected_face:
@@ -48,6 +49,9 @@ class MovementPhase:
             self.selected_face.Disable()
             self.player_movements.append(self.selected_face.GetLabel())
             self.selected_face = None
+            
+            # Montrer le bouton de confirmation dès qu'un mouvement est effectué
+            self.components['confirm_btn'].Show()
 
     def on_roll_dice(self, event):
         if not self.player:
@@ -94,10 +98,18 @@ class MovementPhase:
             if self.player_movements:
                 self.player_movements.pop()
             
+            # Cacher le bouton de confirmation si aucun mouvement n'est actif
+            if not self.movement_history:
+                self.components['confirm_btn'].Hide()
+            
             self.panel_manager.parent.canvas.Refresh()
 
     def on_cancel_move(self, event):
         self.cancel_last_move()
+
+    def on_confirm_movement(self, event):
+        self.panel_manager.parent.start_event_phase()
+        self.reset_dice()
 
     def set_player(self, player):
         self.player = player
@@ -113,7 +125,9 @@ class MovementPhase:
         self.components['roll_btn'].Enable()
         self.components['roll_btn'].Show()
         self.components['cancel_btn'].Hide()
+        self.components['confirm_btn'].Hide()
         
+        # Effacer uniquement les dés
         self.components['results_sizer'].Clear(True)
         self.components['panel'].Layout()
 
