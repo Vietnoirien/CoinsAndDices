@@ -1,0 +1,14 @@
+{
+  "name": "Guivre de I'lle Noire",
+  "health": 4,
+  "description": "Une guivre a attaqué d'une île proche. Les autochtones offrent une belle récompense à celui qui peut trouver et détruire cette créature.",
+  "distance": 16,
+  "distance_degat": 2,
+  "melee": 13,
+  "melee_degat": 4,
+  "magie": 13,
+  "magie_degat": 1,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

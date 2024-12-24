@@ -1,0 +1,14 @@
+{
+  "name": "Horde de Squelettes",
+  "health": 3,
+  "description": "",
+  "distance": 12,
+  "distance_degat": 0,
+  "melee": 13,
+  "melee_degat": 3,
+  "magie": 15,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

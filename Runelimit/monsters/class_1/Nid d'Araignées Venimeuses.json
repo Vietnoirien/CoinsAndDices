@@ -1,0 +1,14 @@
+{
+  "name": "Nid d'Araignées Venimeuses",
+  "health": 2,
+  "description": "",
+  "distance": 10,
+  "distance_degat": 0,
+  "melee": 12,
+  "melee_degat": 1,
+  "magie": 11,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

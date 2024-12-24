@@ -1,0 +1,14 @@
+{
+  "name": "Commando de Razorwings",
+  "health": 2,
+  "description": "Les Razorwings sont de sortie ! Si vous restez calme, ils ne vous trouveront pas.",
+  "distance": 14,
+  "distance_degat": 1,
+  "melee": 11,
+  "melee_degat": 0,
+  "magie": 9,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

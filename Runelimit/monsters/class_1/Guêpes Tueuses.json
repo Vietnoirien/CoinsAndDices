@@ -1,0 +1,14 @@
+{
+  "name": "Guêpes Tueuses",
+  "health": 3,
+  "description": "D'abord vous entendez leur bourdonnement, puis vous sentez leur dard.",
+  "distance": 15,
+  "distance_degat": 1,
+  "melee": 10,
+  "melee_degat": 0,
+  "magie": 10,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

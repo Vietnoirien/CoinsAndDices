@@ -1,0 +1,14 @@
+{
+  "name": "Lady Vorakesh",
+  "health": 3,
+  "description": "Tandis que son mari utilisait les pouvoirs d'un nécromancien, Lady Vorakesh utilisait les siens.",
+  "distance": 14,
+  "distance_degat": 1,
+  "melee": 11,
+  "melee_degat": 0,
+  "magie": 15,
+  "magie_degat": 3,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

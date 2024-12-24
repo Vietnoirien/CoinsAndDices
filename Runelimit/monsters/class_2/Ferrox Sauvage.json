@@ -1,0 +1,14 @@
+{
+  "name": "Ferrox Sauvage",
+  "health": 3,
+  "description": "Vous tombez sur un Ferrox défendant sa nourriture. Vous ne pouvez pas le raisonner, car son esprit est consumé par sa soif de sang. Vous devez le combattre.",
+  "distance": 14,
+  "distance_degat": 0,
+  "melee": 14,
+  "melee_degat": 4,
+  "magie": 11,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

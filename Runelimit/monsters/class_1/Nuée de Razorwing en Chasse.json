@@ -1,0 +1,14 @@
+{
+  "name": "Nuée de Razorwing en Chasse",
+  "health": 2,
+  "description": "Le ciel est rempli du bruit d'une centaine d'ailes battant à l'unisson, une ombre recouvre le pays. Les anciens Razorwings sont à nouveau sortis des cavernes de Drurn, et ils ont faim.",
+  "distance": 13,
+  "distance_degat": 1,
+  "melee": 11,
+  "melee_degat": 0,
+  "magie": 11,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

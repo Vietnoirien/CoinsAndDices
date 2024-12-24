@@ -1,0 +1,14 @@
+{
+  "name": "Maitresse des Ferrox",
+  "health": 2,
+  "description": "",
+  "distance": 12,
+  "distance_degat": 0,
+  "melee": 8,
+  "melee_degat": 0,
+  "magie": 14,
+  "magie_degat": 1,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}

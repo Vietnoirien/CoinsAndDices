@@ -1,0 +1,14 @@
+{
+  "name": "Partie de Chasse",
+  "health": 4,
+  "description": "Les limiers sont les meilleurs pour traquer leur proie, mais ils ne valent pas les goules pour les tuer.",
+  "distance": 14,
+  "distance_degat": 0,
+  "melee": 17,
+  "melee_degat": 3,
+  "magie": 12,
+  "magie_degat": 0,
+  "before_combat": "",
+  "in_combat": "",
+  "reward": ""
+}
