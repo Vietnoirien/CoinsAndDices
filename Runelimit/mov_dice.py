@@ -41,12 +41,24 @@ class MovementPhase(wx.Panel):
         # Section dés de mouvement
         dice_box = wx.StaticBox(self, label="Dés de mouvement")
         self.dice_sizer = wx.StaticBoxSizer(dice_box, wx.VERTICAL)
-    
+        # Section des boutons
+        button_box = wx.StaticBox(self, label="Actions")
+        button_sizer = wx.StaticBoxSizer(button_box, wx.VERTICAL)
+
         # Bouton pour lancer les dés
         self.roll_btn = wx.Button(self, label="Lancer les dés")
         self.roll_btn.Bind(wx.EVT_BUTTON, self.on_roll_dice)
-        self.dice_sizer.Add(self.roll_btn, 0, wx.ALL|wx.CENTER, 5)
-    
+
+        # Bouton d'annulation
+        self.cancel_btn = wx.Button(self, label="Annuler le mouvement")
+        self.cancel_btn.Bind(wx.EVT_BUTTON, self.on_cancel_move)
+        self.cancel_btn.Hide()
+
+        button_sizer.Add(self.roll_btn, 0, wx.EXPAND|wx.ALL, 5)
+        button_sizer.Add(self.cancel_btn, 0, wx.EXPAND|wx.ALL, 5)
+
+        main_sizer.Add(button_sizer, 0, wx.EXPAND|wx.ALL, 5)
+        
         # Zone pour afficher les résultats des dés
         self.dice_results = wx.ScrolledWindow(self)
         self.dice_results.SetScrollRate(0, 20)
@@ -55,11 +67,6 @@ class MovementPhase(wx.Panel):
         self.dice_sizer.Add(self.dice_results, 1, wx.EXPAND|wx.ALL, 5)
     
         main_sizer.Add(self.dice_sizer, 1, wx.EXPAND|wx.ALL, 5)
-    
-        # Bouton d'annulation
-        self.cancel_btn = wx.Button(self, label="Annuler le mouvement")
-        self.cancel_btn.Bind(wx.EVT_BUTTON, self.on_cancel_move)
-        main_sizer.Add(self.cancel_btn, 0, wx.EXPAND|wx.ALL, 5)
     
         self.SetSizer(main_sizer)
     
@@ -78,15 +85,9 @@ class MovementPhase(wx.Panel):
 
     def lock_selected_face(self):
         if self.selected_face:
-            # Capturer la position de départ AVANT tout mouvement
-            if not self.player_movements and self.starting_position is None:
-                self.starting_position = self.GetTopLevelParent().get_player_position()
-                print(f"Setting starting position to: {self.starting_position}")
-                
             dice_panel = self.selected_face.GetParent()
             dice_btn = dice_panel.GetChildren()[0]
             
-            # Stocker toutes les informations nécessaires pour l'annulation
             movement_info = {
                 'face': self.selected_face,
                 'movement': self.selected_face.GetLabel(),
@@ -209,69 +210,93 @@ class MovementPhase(wx.Panel):
         self.dice_panels[index] = new_panel
         self.results_sizer.Layout()
         self.dice_results.FitInside()
-
-    def on_roll_dice(self, event):
-        self.rerolls_used.clear()
-        self.results_sizer.Clear(True)
-        self.dice_panels = []
-        self.selected_face = None
         
+    def on_roll_dice(self, event):
+        self.reset_dice()
+        self.dice_panels = []
+    
+        # Capturer la position initiale au moment du lancement des dés
+        self.starting_position = self.player.position
+        print(f"Position initiale enregistrée: {self.starting_position}")
+    
         # Créer les 5 dés
         for i in range(5):
             dice_panel = self.create_dice_panel(i)
             self.dice_panels.append(dice_panel)
             self.results_sizer.Add(dice_panel, 0, wx.EXPAND|wx.ALL, 5)
-        
-        # Désactiver et cacher le bouton de lancement
-        self.roll_btn.Disable()
+    
+        # Afficher le bouton d'annulation
         self.roll_btn.Hide()
-        
+        self.cancel_btn.Show()
+    
         self.results_sizer.Layout()
         self.dice_results.FitInside()
+        self.Layout()
 
     def next_turn(self):
         self.turn_count += 1
         self.turn_text.SetLabel(f"Tour {self.turn_count}")
-    
+        
     def cancel_last_move(self):
-        if self.movement_history:  # Utiliser movement_history au lieu de last_face_used
-            # Récupérer le dernier mouvement de l'historique
+        if self.movement_history:
             last_move = self.movement_history.pop()
-    
-            # Restaurer la position
+        
+            # Restaurer la position du joueur
             top_window = self.GetTopLevelParent()
+            
             if len(self.player_movements) == 1:
+                # Si c'est le premier mouvement, retourner à la position initiale
                 self.player.position = self.starting_position
                 top_window.players[0].position = self.starting_position
             else:
-                # Restaurer à la position précédente
+                # Sinon, retourner à la position précédente
                 if len(self.movement_history) > 0:
                     previous_move = self.movement_history[-1]
                     self.player.position = previous_move['position']
                     top_window.players[0].position = previous_move['position']
         
-            # Réinitialiser les éléments visuels
+            # Réactiver le dé et ses faces
             dice_btn = last_move['dice_btn']
             dice_btn.SetBackgroundColour(wx.WHITE)
             dice_btn.Enable()
-    
-            reroll_btn = last_move['dice_panel'].GetChildren()[-1]
-            if dice_btn.dice_index in self.rerolls_used:
-                self.rerolls_used.remove(dice_btn.dice_index)
-            reroll_btn.Enable()
-            reroll_btn.SetBackgroundColour(wx.WHITE)
-    
+        
+            # Réactiver la face utilisée
             last_move['face'].Enable()
             last_move['face'].SetBackgroundColour(wx.WHITE)
-    
+        
+            # Retirer le mouvement de l'historique
             if self.player_movements:
                 self.player_movements.pop()
         
-            # Forcer le rafraîchissement du canvas
+            # Rafraîchir l'affichage
             top_window.canvas.Refresh()
+
     def on_cancel_move(self, event):
         self.cancel_last_move()
 
     def set_player(self, player):
         self.player = player
         self.starting_position = player.position
+
+    def reset_dice(self):
+        """Réinitialise l'état des dés"""
+        self.selected_face = None
+        self.player_movements = []
+        self.movement_history = []
+        self.starting_position = None
+        self.rerolls_used.clear()
+        
+        # Réactiver le bouton de lancement
+        self.roll_btn.Enable()
+        self.roll_btn.Show()
+        self.cancel_btn.Hide()
+        
+        # Nettoyer l'affichage des dés
+        self.results_sizer.Clear(True)
+        self.Layout()
+
+    def enable_dice_controls(self, enable=True):
+        """Active ou désactive les contrôles des dés"""
+        for panel in self.dice_panels:
+            for child in panel.GetChildren():
+                child.Enable(enable)
