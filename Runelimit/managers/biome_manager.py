@@ -7,6 +7,7 @@ class BiomeManager:
     def __init__(self, hex_manager):
         self.hex_manager = hex_manager
         self.hex_biomes = {}
+        self.events = {}  # Ajout de l'attribut events
         self.biomes = {
             "Marais": {"primary": wx.Colour(120, 200, 110), "pattern": None},
             "Plaine": {"primary": wx.Colour(120, 200, 110), "pattern": None},
@@ -22,7 +23,7 @@ class BiomeManager:
             "Montagne": {"primary": wx.Colour(101, 67, 33), "pattern": None},
             "Ville": {"primary": wx.Colour(128, 128, 128), "pattern": None},
             "Foret": {"primary": wx.Colour(0, 100, 0), "pattern": None}
-        }
+        }        
         self.river_path = RiverPath(self.hex_manager)
         self.drawing_manager = None
 
@@ -48,6 +49,9 @@ class BiomeManager:
                     self.hex_biomes = data['biomes']
                 if 'river_paths' in data:
                     self.river_path.load_paths(data['river_paths'])
+                if 'events' in data:  # Ajout du chargement des events
+                    self.events = {tuple(map(int, k.strip('()').split(','))): v 
+                                 for k, v in data['events'].items()}
 
     def initialize(self):
         self.drawing_manager = self.hex_manager.drawing_manager

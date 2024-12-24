@@ -15,15 +15,13 @@ class DrawingManager:
         self.biome_manager = biome_manager
 
     def draw_grid(self, dc):
-        # Créer un buffer
         buffer = wx.Bitmap(self.hex_manager.canvas_width, self.hex_manager.canvas_height)
         memory_dc = wx.MemoryDC(buffer)
-        
-        # Dessiner dans le buffer
+    
         memory_dc.SetBackground(wx.Brush(wx.WHITE))
         memory_dc.Clear()
-        
-        # Dessiner la grille dans le buffer
+    
+        # Dessiner la grille hexagonale
         for row in range(self.hex_manager.grid_height):
             for col in range(self.hex_manager.grid_width):
                 center = self.hex_manager.get_hex_center(col, row)
@@ -32,10 +30,13 @@ class DrawingManager:
                 biome = self.biome_manager.get_biome(pos)
                 biome_data = self.biome_manager.get_biome_data(biome)
                 self.draw_hex(memory_dc, points, biome_data, pos)
-        
+    
+        # Ajouter les événements
+        self.draw_events(memory_dc)
+    
         # Copier le buffer vers le DC principal
         dc.Blit(0, 0, buffer.GetWidth(), buffer.GetHeight(), memory_dc, 0, 0)
-
+    
     def draw_hex(self, dc, points, biome_data, pos):
         if not biome_data or "primary" not in biome_data:
             dc.SetBrush(wx.Brush(wx.Colour(200, 200, 200)))
@@ -196,3 +197,32 @@ class DrawingManager:
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.Pen(color))
             dc.DrawCircle(int(dot_x), int(dot_y), int(dot_size))
+
+    def draw_diamond_marker(self, dc, center, color):
+        x, y = center
+        size = self.hex_manager.hex_size * 0.3  # Taille du diamant proportionnelle à l'hexagone
+        
+        points = [
+            (x, y - size),  # Haut
+            (x + size, y),  # Droite
+            (x, y + size),  # Bas
+            (x - size, y)   # Gauche
+        ]
+        
+        dc.SetBrush(wx.Brush(color))
+        dc.SetPen(wx.Pen(wx.BLACK, 1))
+        dc.DrawPolygon([wx.Point(int(px), int(py)) for px, py in points])
+
+    def draw_events(self, dc):
+        # Définition des couleurs par tier
+        tier_colors = {
+            "Tier1": wx.Colour(0, 255, 0),    # Vert
+            "Tier2": wx.Colour(0, 0, 255),    # Bleu
+            "Tier3": wx.Colour(255, 255, 0),  # Jaune
+            "Tier4": wx.Colour(255, 0, 0)     # Rouge
+        }
+        
+        for pos, event_data in self.biome_manager.events.items():
+            if event_data["type"] in tier_colors:
+                center = self.hex_manager.get_hex_center(*pos)
+                self.draw_diamond_marker(dc, center, tier_colors[event_data["type"]])
