@@ -1,0 +1,10 @@
+{
+    "Test Dice": {
+        "faces": 3,
+        "values": [
+            "A",
+            "B",
+            "C"
+        ]
+    }
+}
