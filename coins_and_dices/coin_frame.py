@@ -15,13 +15,14 @@ class CoinFrame(wx.Frame):
     
     This implementation uses PyTorch for GPU-accelerated coin flips, enabling efficient
     processing of large numbers of coins. Results are displayed in a grid with statistics
-    and supports virtual mode for large datasets.
+    and supports virtual mode with full sequence viewing capability.
     
     Attributes:
         panel (wx.Panel): Main panel containing UI elements
         coin_input (wx.SpinCtrl): Input control for number of coins
         grid (wx.grid.Grid): Grid displaying results and statistics
         device (torch.device): GPU device if available, otherwise CPU
+        show_all_btn (wx.Button): Button for displaying full sequence in virtual mode
     """
     
     def __init__(self) -> None:
@@ -35,6 +36,8 @@ class CoinFrame(wx.Frame):
         self.panel: wx.Panel
         self.coin_input: wx.SpinCtrl
         self.grid: wx.grid.Grid
+        self.show_all_btn: Optional[wx.Button] = None
+        self.current_results: List[str] = []
         self.init_ui()
         
     def init_ui(self) -> None:
@@ -119,6 +122,62 @@ class CoinFrame(wx.Frame):
             formatted_lines.append(" → ".join(line_items))
         return "\n".join(formatted_lines)
 
+    def show_full_sequence(self, results: List[str]) -> None:
+        """Display the complete sequence progressively with progress tracking.
+    
+        Implements progressive loading of coin flip results with visual feedback.
+        Updates the grid cell content in batches while maintaining performance
+        and responsiveness.
+    
+        Args:
+            results: Complete list of coin flip results to display as strings
+                    where each string is either 'Pile' or 'Face'
+        """
+        progress_dialog: wx.ProgressDialog = wx.ProgressDialog(
+            "Loading Full Sequence",
+            "Processing results...",
+            maximum=len(results),
+            parent=self,
+            style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_ELAPSED_TIME
+        )
+    
+        # Clear existing content
+        self.grid.SetCellValue(2, 1, "")
+        self.grid.ForceRefresh()
+    
+        formatted_results: List[str] = []
+        update_interval: float = COIN_UPDATE_INTERVAL
+        last_update: float = time.time()
+    
+        for i in range(0, len(results), COIN_BATCH_SIZE):
+            current_time: float = time.time()
+            if current_time - last_update >= update_interval:
+                batch: List[str] = results[i:i + COIN_BATCH_SIZE]
+                formatted_batch: str = self.format_sequence(batch)
+                formatted_results.append(formatted_batch)
+            
+                # Update grid with all formatted results so far
+                display_text: str = "\n".join(formatted_results)
+                self.grid.SetCellValue(2, 1, display_text)
+                self.grid.AutoSizeRow(2)
+                self.grid.ForceRefresh()
+            
+                progress_dialog.Update(i)
+                wx.Yield()
+                last_update = current_time
+    
+        # Final update with any remaining results
+        remaining_results: List[str] = results[i:]
+        if remaining_results:
+            final_batch: str = self.format_sequence(remaining_results)
+            formatted_results.append(final_batch)
+            final_display: str = "\n".join(formatted_results)
+            self.grid.SetCellValue(2, 1, final_display)
+            self.grid.AutoSizeRow(2)
+            self.grid.ForceRefresh()
+    
+        progress_dialog.Destroy()
+        
     def update_grid_results(
         self,
         results: List[str],
@@ -127,10 +186,10 @@ class CoinFrame(wx.Frame):
     ) -> None:
         """Update grid with optimized coin flip results and statistics.
         
-        Implements efficient display strategies:
-        - Virtual mode for large datasets (>1M flips)
-        - Progressive loading for medium datasets
-        - Direct display for small datasets
+        Implements efficient display strategies with full sequence viewing capability:
+        - Virtual mode with expandable full view
+        - Progressive loading for all datasets
+        - Memory-efficient processing
         
         Args:
             results: List of coin flip results ('Pile' or 'Face')
@@ -138,60 +197,51 @@ class CoinFrame(wx.Frame):
             virtual_threshold: Size threshold for switching to virtual display mode
         """
         def create_virtual_display(data: List[str], sample_size: int = COIN_SAMPLE_SIZE) -> str:
-            """Create summarized view for very large datasets."""
+            """Create initial summarized view with option to expand."""
             return (
                 f"Total flips: {len(data):,}\n\n"
                 f"First {sample_size} results:\n"
                 f"{self.format_sequence(data[:sample_size])}\n\n"
-                f"[... {len(data) - 2*sample_size:,} flips ...]\n\n"
+                f"[... Click 'Show All' to view {len(data) - 2*sample_size:,} more flips ...]\n\n"
                 f"Last {sample_size} results:\n"
                 f"{self.format_sequence(data[-sample_size:])}"
             )
         
-        def update_sequence_cell(batch: List[str], is_first: bool = False) -> None:
-            """Update sequence cell with new batch of results."""
-            if is_first:
-                new_value: str = self.format_sequence(batch)
-                self.grid.SetCellValue(2, 1, new_value)
-            else:
-                current_value: str = self.grid.GetCellValue(2, 1)
-                new_value: str = f"{current_value}\n{self.format_sequence(batch)}"
-                self.grid.SetCellValue(2, 1, new_value)
+        # Store current results for show_all functionality
+        self.current_results = results
         
         # Clear and update statistics
         self.grid.ClearGrid()
         piles: int = results.count('Pile')
         faces: int = results.count('Face')
         
-        # Update statistics immediately
+        # Update statistics
         self.grid.SetCellValue(0, 0, "Pile")
         self.grid.SetCellValue(0, 1, str(piles))
         self.grid.SetCellValue(1, 0, "Face")
         self.grid.SetCellValue(1, 1, str(faces))
         self.grid.SetCellValue(2, 0, "Séquence")
         
-        # Handle display based on result size
         if len(results) > virtual_threshold:
-            virtual_display: str = create_virtual_display(results)
-            self.grid.SetCellValue(2, 1, virtual_display)
+            # Create "Show All" button
+            if self.show_all_btn:
+                self.show_all_btn.Destroy()
+            
+            self.show_all_btn = wx.Button(self.panel, label="Show All Results")
+            self.show_all_btn.Bind(
+                wx.EVT_BUTTON, 
+                lambda evt: self.show_full_sequence(self.current_results)
+            )
+            
+            # Add button to panel
+            self.panel.GetSizer().Add(self.show_all_btn, 0, wx.ALL|wx.CENTER, 5)
+            self.panel.Layout()
+            
+            # Show initial summary
+            self.grid.SetCellValue(2, 1, create_virtual_display(results))
         else:
-            # Progressive loading for medium to large datasets
-            update_interval: float = COIN_UPDATE_INTERVAL
-            last_update: float = time.time()
-            
-            # Initial batch - always display first
-            first_batch: List[str] = results[:batch_size]
-            update_sequence_cell(first_batch, True)
-            wx.Yield()
-            
-            # Remaining batches with throttling
-            for i in range(batch_size, len(results), batch_size):
-                current_time: float = time.time()
-                if current_time - last_update >= update_interval:
-                    batch: List[str] = results[i:i + batch_size]
-                    update_sequence_cell(batch, False)
-                    wx.Yield()
-                    last_update = current_time
+            # Direct display for smaller datasets
+            self.grid.SetCellValue(2, 1, self.format_sequence(results))
         
         self.grid.AutoSizeColumns()
         self.grid.AutoSizeRow(2)

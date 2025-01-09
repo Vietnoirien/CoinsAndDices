@@ -8,20 +8,23 @@ A comprehensive Python application for simulating various dice games and coin fl
 - GPU-accelerated coin flipping using PyTorch
 - Supports up to 10 million coins per flip
 - Advanced display strategies:
-  - Virtual mode for datasets > 1M flips
-  - Progressive loading with throttling
+  - Virtual mode for datasets > 1M flips with "Show All" capability
+  - Progressive loading with progress tracking
   - Direct display for small datasets
+  - Full sequence viewing with memory-efficient loading
 - Real-time statistical tracking:
   - Individual flip results (Heads/Tails)
   - Running totals and percentages
+  - Formatted sequence display with configurable items per line
 - Performance optimizations:
   - Batched processing (10,000 coins per batch)
   - Memory-efficient result handling
   - Throttled UI updates (100ms interval)
+  - Progress tracking for large operations
 - Hardware acceleration features:
   - CUDA GPU support when available
   - Automatic CPU fallback
-  - Optimized batch sizes
+  - Batch size optimization
   - Memory-efficient processing
 
 ### 2. Standard Dice (StandardDiceFrame)
@@ -30,10 +33,11 @@ A comprehensive Python application for simulating various dice games and coin fl
   - Full Mode: Complete detailed results with progressive loading
   - Sample Mode: Representative sample with summary
   - Statistics Mode: Comprehensive statistical analysis
+  - Virtual mode for large datasets with full view option
 - Performance features:
   - Virtual display mode for >1M results
-  - Progressive loading with throttling
-  - Optimized batch processing
+  - Progressive loading with progress tracking
+  - Optimized batch processing (10,000 dice per batch)
   - Memory-efficient result handling
 - Statistical Analysis:
   - Individual roll results
@@ -42,10 +46,10 @@ A comprehensive Python application for simulating various dice games and coin fl
   - Standard deviation
   - Min/Max values
 - Display optimizations:
-  - Batched updates (10,000 results per batch)
+  - Batched updates with progress indication
   - Throttled UI refresh (100ms interval)
   - Adaptive display modes
-  - Progressive result loading
+  - Full sequence access for any dataset size
 
 ### 3. Runebound Game System (RuneboundFrame)
 - Specialized implementation of Runebound board game dice mechanics
