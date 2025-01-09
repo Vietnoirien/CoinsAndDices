@@ -133,9 +133,11 @@ project_root/
 ```
 
 ## Installation
-1. Clone the repository:
+1. Clone the repository and switch to the optimization branch:
 ```
 git clone https://github.com/Vietnoirien/CoinsAndDices.git
+cd CoinsAndDices
+git checkout feature/torch-optimization
 ```
 2. Install the required packages:
 ```
