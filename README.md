@@ -5,27 +5,46 @@ A comprehensive Python application for simulating various dice games and coin fl
 ## Detailed Components
 
 ### 1. Coin Simulation (CoinFrame)
-- Supports 1-100 coins per flip
+- GPU-accelerated coin flipping using PyTorch
+- Supports up to 10 million coins per flip
+- Batch processing for memory efficiency
 - Real-time statistical tracking:
   - Individual flip results (Heads/Tails)
   - Running totals and percentages
   - Formatted sequence display with configurable items per line
+- Progress tracking for large operations
 - Grid-based result visualization
 - Automatic layout adjustment for result clarity
+- Hardware acceleration features:
+  - CUDA GPU support when available
+  - Automatic CPU fallback
+  - Batch size optimization
+  - Memory-efficient processing
 
 ### 2. Standard Dice (StandardDiceFrame)
-- Full support for standard dice notation (e.g., "2d6", "3d8")
+- Full support for standard dice notation (e.g., "2d6", "3d1e6")
+- Advanced display modes for large-scale rolls:
+  - Full Mode: Complete detailed results
+  - Sample Mode: Representative sample with summary
+  - Statistics Mode: Comprehensive statistical analysis
 - Features:
   - Multiple simultaneous dice rolls
-  - Dice range: 1-1000 sides
-  - Maximum 100 dice per roll
-  - Detailed statistical breakdown:
-    - Individual roll results
-    - Sum totals
-    - Average calculations
-    - Min/Max values
-  - Grid-based result display with automatic formatting
-
+  - Support for massive dice pools (up to 1,000,000 dice)
+  - Extended range support (up to 1e9 sides)
+  - Progressive loading for large results
+  - Export functionality for full datasets
+- Statistical Analysis:
+  - Individual roll results
+  - Sum totals
+  - Mean and median
+  - Standard deviation
+  - Min/Max values
+- Memory-efficient processing:
+  - Batch processing
+  - GPU acceleration
+  - Adaptive display modes
+  - Progressive result loading
+  
 ### 3. Runebound Game System (RuneboundFrame)
 - Specialized implementation of Runebound board game dice mechanics
 - Features:

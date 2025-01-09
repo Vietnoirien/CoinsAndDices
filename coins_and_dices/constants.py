@@ -15,6 +15,11 @@ TITLE_PADDING: int = 20
 BUTTON_PADDING: int = 10
 DESCRIPTION_PADDING: int = 5
 
+# Dice constants
+BATCH_SIZE: int = 1_000_000
+ITEMS_PER_LINE: int = 15
+COIN_MAX_COUNT: int = 10_000_000
+COIN_MIN_COUNT: int = 1
 
 # Adding new constants for CustomDiceFrame
 CUSTOM_DICE_FRAME_SIZE: Tuple[int, int] = (800, 600)
@@ -22,10 +27,13 @@ CUSTOM_DICE_RESULT_AREA_SIZE: Tuple[int, int] = (700, 400)
 CUSTOM_DICE_MAX_COUNT: int = 100
 CUSTOM_DICE_MIN_COUNT: int = 1
 
-# Adding new constants for StandardDiceFrame
-MAX_DICE: int = CUSTOM_DICE_MAX_COUNT
-MAX_SIDES: int = 1000
+# Standard Dice Constants
+MAX_DICE: int = 1_000_000
+MAX_SIDES: float = 1e9  # Support for billion-sided dice
 MAX_ROLLS_PER_LINE: int = 30
+DICE_BATCH_SIZE: int = 1_000_000  # GPU processing batch size
+STANDARD_DICE_FRAME_SIZE: Tuple[int, int] = (1024, 768)
+
 GRID_COLUMNS = {
     'NOTATION': 0,
     'DETAILS': 1,
@@ -33,7 +41,6 @@ GRID_COLUMNS = {
     'AVERAGE': 3,
     'MINMAX': 4
 }
- 
 
 # Add these new constants for Runebound_frame
 RUNEBOUND_FRAME_SIZE: Tuple[int, int] = (800, 600)
