@@ -1,15 +1,21 @@
-from .game_history import GameHistory
-from .constants import WINDOW_SIZE, COIN_MAX_COUNT, COIN_MIN_COUNT, BATCH_SIZE, ITEMS_PER_LINE
+from typing import List, Optional, Tuple
+import time
 import wx
 import wx.grid
 import torch
-from typing import List, Optional, Tuple
+from .game_history import GameHistory
+from .constants import (
+    WINDOW_SIZE, COIN_MAX_COUNT, COIN_MIN_COUNT, 
+    BATCH_SIZE, ITEMS_PER_LINE, COIN_VIRTUAL_THRESHOLD,
+    COIN_BATCH_SIZE, COIN_SAMPLE_SIZE, COIN_UPDATE_INTERVAL
+)
 
 class CoinFrame(wx.Frame):
     """A frame that simulates flipping coins using GPU acceleration and displays results in a grid.
     
     This implementation uses PyTorch for GPU-accelerated coin flips, enabling efficient
-    processing of large numbers of coins. Results are displayed in a grid with statistics.
+    processing of large numbers of coins. Results are displayed in a grid with statistics
+    and supports virtual mode for large datasets.
     
     Attributes:
         panel (wx.Panel): Main panel containing UI elements
@@ -17,7 +23,6 @@ class CoinFrame(wx.Frame):
         grid (wx.grid.Grid): Grid displaying results and statistics
         device (torch.device): GPU device if available, otherwise CPU
     """
-    
     
     def __init__(self) -> None:
         """Initialize the CoinFrame with GPU support."""
@@ -84,7 +89,7 @@ class CoinFrame(wx.Frame):
             num_coins: Number of coins to flip
             
         Returns:
-            List of coin flip results ('Pile' or 'Face')
+            List[str]: List of coin flip results ('Pile' or 'Face')
         """
         results: List[str] = []
         remaining: int = num_coins
@@ -106,7 +111,7 @@ class CoinFrame(wx.Frame):
             items_per_line: Number of items to display per line
             
         Returns:
-            Formatted string with coin flip sequence
+            str: Formatted string with coin flip sequence
         """
         formatted_lines: List[str] = []
         for i in range(0, len(results), items_per_line):
@@ -114,26 +119,80 @@ class CoinFrame(wx.Frame):
             formatted_lines.append(" → ".join(line_items))
         return "\n".join(formatted_lines)
 
-    def update_grid_results(self, results: List[str]) -> None:
-        """Update grid with coin flip results and statistics.
+    def update_grid_results(
+        self,
+        results: List[str],
+        batch_size: int = COIN_BATCH_SIZE,
+        virtual_threshold: int = COIN_VIRTUAL_THRESHOLD
+    ) -> None:
+        """Update grid with optimized coin flip results and statistics.
+        
+        Implements efficient display strategies:
+        - Virtual mode for large datasets (>1M flips)
+        - Progressive loading for medium datasets
+        - Direct display for small datasets
         
         Args:
-            results: List of coin flip results
+            results: List of coin flip results ('Pile' or 'Face')
+            batch_size: Size of each processing batch for progressive loading
+            virtual_threshold: Size threshold for switching to virtual display mode
         """
+        def create_virtual_display(data: List[str], sample_size: int = COIN_SAMPLE_SIZE) -> str:
+            """Create summarized view for very large datasets."""
+            return (
+                f"Total flips: {len(data):,}\n\n"
+                f"First {sample_size} results:\n"
+                f"{self.format_sequence(data[:sample_size])}\n\n"
+                f"[... {len(data) - 2*sample_size:,} flips ...]\n\n"
+                f"Last {sample_size} results:\n"
+                f"{self.format_sequence(data[-sample_size:])}"
+            )
+        
+        def update_sequence_cell(batch: List[str], is_first: bool = False) -> None:
+            """Update sequence cell with new batch of results."""
+            if is_first:
+                new_value: str = self.format_sequence(batch)
+                self.grid.SetCellValue(2, 1, new_value)
+            else:
+                current_value: str = self.grid.GetCellValue(2, 1)
+                new_value: str = f"{current_value}\n{self.format_sequence(batch)}"
+                self.grid.SetCellValue(2, 1, new_value)
+        
+        # Clear and update statistics
         self.grid.ClearGrid()
         piles: int = results.count('Pile')
         faces: int = results.count('Face')
         
+        # Update statistics immediately
         self.grid.SetCellValue(0, 0, "Pile")
         self.grid.SetCellValue(0, 1, str(piles))
         self.grid.SetCellValue(1, 0, "Face")
         self.grid.SetCellValue(1, 1, str(faces))
         self.grid.SetCellValue(2, 0, "Séquence")
         
-        display_results: List[str] = results[:1000] if len(results) > 1000 else results
-        sequence: str = (self.format_sequence(display_results) + "\n[...]") if len(results) > 1000 else self.format_sequence(display_results)
+        # Handle display based on result size
+        if len(results) > virtual_threshold:
+            virtual_display: str = create_virtual_display(results)
+            self.grid.SetCellValue(2, 1, virtual_display)
+        else:
+            # Progressive loading for medium to large datasets
+            update_interval: float = COIN_UPDATE_INTERVAL
+            last_update: float = time.time()
+            
+            # Initial batch - always display first
+            first_batch: List[str] = results[:batch_size]
+            update_sequence_cell(first_batch, True)
+            wx.Yield()
+            
+            # Remaining batches with throttling
+            for i in range(batch_size, len(results), batch_size):
+                current_time: float = time.time()
+                if current_time - last_update >= update_interval:
+                    batch: List[str] = results[i:i + batch_size]
+                    update_sequence_cell(batch, False)
+                    wx.Yield()
+                    last_update = current_time
         
-        self.grid.SetCellValue(2, 1, sequence)
         self.grid.AutoSizeColumns()
         self.grid.AutoSizeRow(2)
 

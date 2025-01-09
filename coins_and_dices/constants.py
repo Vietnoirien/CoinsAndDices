@@ -57,3 +57,9 @@ RUNEBOUND_FACES: List[List[str]] = [
     ["Route", "Riviere"],
     ["Route", "Plaine", "Colline"]
 ]
+
+# Coin display constants
+COIN_VIRTUAL_THRESHOLD: int = 1_000_000
+COIN_BATCH_SIZE: int = 10000
+COIN_SAMPLE_SIZE: int = 1000
+COIN_UPDATE_INTERVAL: float = 0.1  # seconds

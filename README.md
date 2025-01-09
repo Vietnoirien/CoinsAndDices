@@ -7,44 +7,46 @@ A comprehensive Python application for simulating various dice games and coin fl
 ### 1. Coin Simulation (CoinFrame)
 - GPU-accelerated coin flipping using PyTorch
 - Supports up to 10 million coins per flip
-- Batch processing for memory efficiency
+- Advanced display strategies:
+  - Virtual mode for datasets > 1M flips
+  - Progressive loading with throttling
+  - Direct display for small datasets
 - Real-time statistical tracking:
   - Individual flip results (Heads/Tails)
   - Running totals and percentages
-  - Formatted sequence display with configurable items per line
-- Progress tracking for large operations
-- Grid-based result visualization
-- Automatic layout adjustment for result clarity
+- Performance optimizations:
+  - Batched processing (10,000 coins per batch)
+  - Memory-efficient result handling
+  - Throttled UI updates (100ms interval)
 - Hardware acceleration features:
   - CUDA GPU support when available
   - Automatic CPU fallback
-  - Batch size optimization
+  - Optimized batch sizes
   - Memory-efficient processing
 
 ### 2. Standard Dice (StandardDiceFrame)
 - Full support for standard dice notation (e.g., "2d6", "3d1e6")
-- Advanced display modes for large-scale rolls:
-  - Full Mode: Complete detailed results
+- Advanced display modes:
+  - Full Mode: Complete detailed results with progressive loading
   - Sample Mode: Representative sample with summary
   - Statistics Mode: Comprehensive statistical analysis
-- Features:
-  - Multiple simultaneous dice rolls
-  - Support for massive dice pools (up to 1,000,000 dice)
-  - Extended range support (up to 1e9 sides)
-  - Progressive loading for large results
-  - Export functionality for full datasets
+- Performance features:
+  - Virtual display mode for >1M results
+  - Progressive loading with throttling
+  - Optimized batch processing
+  - Memory-efficient result handling
 - Statistical Analysis:
   - Individual roll results
   - Sum totals
   - Mean and median
   - Standard deviation
   - Min/Max values
-- Memory-efficient processing:
-  - Batch processing
-  - GPU acceleration
+- Display optimizations:
+  - Batched updates (10,000 results per batch)
+  - Throttled UI refresh (100ms interval)
   - Adaptive display modes
   - Progressive result loading
-  
+
 ### 3. Runebound Game System (RuneboundFrame)
 - Specialized implementation of Runebound board game dice mechanics
 - Features:
