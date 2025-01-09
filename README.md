@@ -160,62 +160,169 @@ The standard dice module combines powerful GPU computation with flexible dice no
 - Display threshold: 10,000 results for virtual mode
 - Update interval: 100ms for UI refresh
 
-### 3. Custom Dice System (CustomDiceFrame)
-- Complete custom dice creation and management:
-  - Persistent storage of custom dice configurations
-  - JSON-based saving/loading system
-  - Dynamic face value configuration
-- Features:
+## 🎲 Custom Dice Deep Dive
+
+### Architecture Overview
+
+The custom dice module provides a flexible system for creating and managing user-defined dice with GPU-accelerated rolling capabilities and persistent storage.
+
+#### Core Components
+1. **Custom Dice Engine**
+  - JSON-based configuration storage
+  - Dynamic face value management
+  - GPU-accelerated random generation
+  - Batch processing optimization
+
+2. **Configuration System**
+  - Persistent dice definitions
+  - Real-time configuration updates
+  - Face value validation
+  - Dynamic UI adaptation
+
+3. **Performance Architecture**
+  - Batch processing (1M dice per iteration)
+  - Memory-efficient face storage
+  - Optimized result handling
+  - Throttled display updates
+
+#### Key Features
+
+1. **Dice Management**
   - Create/Edit/Delete custom dice
-  - Multiple dice rolls (1-100 per roll)
-  - Custom face values and probabilities
-  - Result history tracking
-  - Detailed roll statistics
-  
-### 4. Runebound Game System (RuneboundFrame)
-- Specialized implementation of Runebound board game dice mechanics
-- Features:
-  - Custom face values and symbols
-  - Dynamic reroll system:
-    - Per-die reroll tracking
-    - Visual state indicators
-    - Reroll limitations
+  - Dynamic face configuration
+  - Value validation system
+  - Real-time updates
+
+2. **Rolling System**
+  - GPU-accelerated batch rolling
+  - Progressive result loading
+  - Virtual mode for large datasets
+  - Statistical tracking
+
+3. **Progress Tracking**
+  - Visual progress indication
+  - Batch processing feedback
+  - Memory usage monitoring
+  - Operation cancellation
+
+4. **Data Management**
+  - JSON configuration persistence
+  - Automatic saving/loading
+  - Error recovery
+  - Version control
+
+#### Technical Specifications
+
+- Maximum dice: 1 million per roll
+- Face count: Unlimited per die
+- Batch size: 1 million for GPU processing
+- Display threshold: 1M results for virtual mode
+- Update interval: 100ms for UI refresh
+
+## 🎲 Runebound Dice Deep Dive
+
+### Architecture Overview
+
+The Runebound dice module implements a specialized board game system with interactive reroll mechanics and state tracking, providing an immersive gaming experience.
+
+#### Core Components
+1. **State Management Engine**
+  - Per-die state tracking
+  - Reroll availability monitoring
+  - Face selection validation
+  - Color-coded status system
+
+2. **Interactive Display System**
+  - Dynamic button states
+  - Real-time visual feedback
+  - Color-based state indication
+  - Responsive UI updates
+
+3. **Game Logic Architecture**
+  - Custom face value handling
+  - Reroll limitation enforcement
+  - Selection state management
+  - Event-driven updates
+
+#### Key Features
+
+1. **Dice Management**
+  - Individual die state tracking
+  - Face selection system
+  - Reroll availability indicators
+  - Dynamic face updates
+
+2. **Visual Feedback System**
+  - Red: Locked dice states
+  - Green: Selected face values
+  - Blue: Available rerolls
+  - Grey: Used reroll states
+
+3. **Game Controls**
   - Interactive dice selection
-  - Color-coded status indicators:
-    - Red: Locked dice
-    - Green: Selected faces
-    - Blue: Available rerolls
-    - Grey: Used rerolls
+  - Face value choosing
+  - Reroll management
+  - State persistence
+
+4. **Event Handling**
+  - Click event management
+  - State change tracking
+  - Selection validation
+  - History recording
+
+#### Technical Specifications
+
+- Maximum dice: 5 per game
+- Face configurations: 6 unique sets
+- Rerolls: One per die
+- Update interval: Real-time
+- Display mode: Interactive UI
 
 ### Supporting Systems
 
 1. **Game History Tracking**
-- Comprehensive event logging
-- Statistical analysis capabilities
-- Session persistence
-- Event metadata storage
+   - Singleton pattern implementation for global state
+   - Event-based architecture with metadata capture
+   - Session-wide statistics aggregation
+   - Comprehensive event logging with timestamps
+   - Performance metrics collection
 
 2. **User Interface Features**
-- Consistent design across all frames
-- Responsive layouts
-- Error handling and validation
-- Interactive controls
-- Automatic sizing and scrolling
+   - Centralized UI configuration management
+   - Dynamic frame switching with state preservation
+   - Consistent styling across all components
+   - Event handler delegation pattern
+   - Automated resource cleanup
+   - Responsive layout management
 
 3. **Data Management**
-- JSON configuration storage
-- Session state management
-- Result caching
-- Error recovery
+   - JSON-based configuration persistence
+   - Real-time statistics calculation
+   - Session state preservation
+   - Error recovery mechanisms
+   - Event metadata enrichment
 
-## Technical Specifications
+4. **Analytics Engine**
+   - Win/loss ratio tracking
+   - Trend analysis with pattern detection
+   - Session duration monitoring
+   - Game type distribution analysis
+   - Streak calculation system
+   - Hourly activity tracking
 
-### Constraints
-- Coin flips: 1-100 coins
-- Standard dice: 1-1000 sides
-- Custom dice: 1-100 dice per roll
-- Runebound dice: Configurable face count
-- Result display: 15-30 items per line (configurable)
+5. **Frame Management**
+   - Parent-child relationship handling
+   - Resource lifecycle management
+   - Event propagation system
+   - State preservation between transitions
+   - Memory optimization
+
+6. **Configuration System**
+   - Centralized constants management
+   - Dynamic UI element configuration
+   - Localization support
+   - Feature toggles
+   - Environment-aware settings
 
 ### File Organization
 
