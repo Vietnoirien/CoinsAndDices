@@ -1,3 +1,4 @@
+import time
 from typing import List, Tuple, Optional, Union, Dict, Literal
 from .game_history import GameHistory
 import wx
@@ -135,30 +136,95 @@ class StandardDiceFrame(wx.Frame):
             )
         return self.format_rolls_display(rolls)
 
+    import time
+
     def display_results_progressively(
         self,
         rolls: List[Union[int, float]],
         row: int,
-        batch_size: int = 1000
+        batch_size: int = 10000,
+        virtual_threshold: int = 1_000_000
     ) -> None:
-        """Display results in batches to prevent UI freezing.
+        """Display roll results progressively with virtual mode for large datasets.
+    
+        Implements an efficient display strategy:
+        - For datasets > virtual_threshold: Shows summary with first/last sections
+        - For smaller datasets: Uses batched progressive loading with throttling
     
         Args:
-            rolls: List of dice roll results
-            row: Grid row to update
-            batch_size: Number of results to process per batch
+            rolls: List of dice roll results to display
+            row: Grid row index to update
+            batch_size: Number of results to process per batch for regular display
+            virtual_threshold: Size threshold to switch to virtual display mode
         """
-        def update_cell(batch: List[Union[int, float]]) -> None:
-            """Inner function to update grid cell with formatted batch."""
-            current_value = self.grid.GetCellValue(row, GRID_COLUMNS['DETAILS'])
-            new_value = (current_value + "\n" + self.format_rolls_display(batch)).strip()
-            self.grid.SetCellValue(row, GRID_COLUMNS['DETAILS'], new_value)
+        def create_virtual_display(
+            data: List[Union[int, float]], 
+            sample_size: int = 1000
+        ) -> str:
+            """Create a summarized view for very large datasets.
         
-        # Process batches directly without recursion
-        for i in range(0, len(rolls), batch_size):
-            batch = rolls[i:i + batch_size]
-            wx.CallAfter(update_cell, batch)
-            wx.Yield()
+            Args:
+                data: Complete list of roll results
+                sample_size: Number of entries to show at start and end
+            
+            Returns:
+                str: Formatted string containing the virtual display summary
+            """
+            return (
+                f"Total entries: {len(data):,}\n\n"
+                f"First {sample_size} results:\n"
+                f"{self.format_rolls_display(data[:sample_size])}\n\n"
+                f"[... {len(data) - 2*sample_size:,} entries ...]\n\n"
+                f"Last {sample_size} results:\n"
+                f"{self.format_rolls_display(data[-sample_size:])}"
+            )
+    
+        def update_cell(
+            batch: List[Union[int, float]], 
+            is_first: bool = False
+        ) -> None:
+            """Update grid cell with new batch of results.
+        
+            Args:
+                batch: List of results to append to display
+                is_first: Flag indicating if this is the first batch
+            """
+            if is_first:
+                new_value: str = self.format_rolls_display(batch)
+            else:
+                current_value: str = self.grid.GetCellValue(row, GRID_COLUMNS['DETAILS'])
+                new_value: str = (current_value + "\n" + self.format_rolls_display(batch)).strip()
+            self.grid.SetCellValue(row, GRID_COLUMNS['DETAILS'], new_value)
+    
+        # Use virtual mode for large datasets
+        if len(rolls) > virtual_threshold:
+            virtual_display: str = create_virtual_display(rolls)
+            wx.CallAfter(
+                self.grid.SetCellValue,
+                row,
+                GRID_COLUMNS['DETAILS'],
+                virtual_display
+            )
+            return
+    
+        # Progressive display for smaller datasets
+        update_interval: float = 0.1  # seconds
+        last_update: float = time.time()
+    
+        # Initialize with first batch
+        first_batch: List[Union[int, float]] = rolls[:batch_size]
+        wx.CallAfter(update_cell, first_batch, True)
+        wx.Yield()
+    
+        # Process remaining batches
+        for i in range(batch_size, len(rolls), batch_size):
+            current_time: float = time.time()
+            if current_time - last_update >= update_interval:
+                batch: List[Union[int, float]] = rolls[i:i + batch_size]
+                wx.CallAfter(update_cell, batch)
+                wx.Yield()
+                last_update = current_time    
+    
     def update_display(
         self,
         rolls: List[Union[int, float]],
