@@ -110,7 +110,7 @@ project_root/
 ## Installation
 1. Clone the repository:
 ```
-git clone https://github.com/Vietnoirien/coins_and_dices.git
+git clone https://github.com/Vietnoirien/CoinsAndDices.git
 ```
 2. Install the required packages:
 ```
