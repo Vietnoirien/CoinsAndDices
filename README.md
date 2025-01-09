@@ -13,8 +13,8 @@ Dive into the fascinating world of probability with CoinsAndDices, a state-of-th
 🎮 **Four Unique Gaming Experiences**
 1. **Coin Master** - Push the boundaries with millions of simultaneous coin flips
 2. **Dice Virtuoso** - Master the classic dice notation with stunning visualizations
-3. **Runebound Adventure** - Experience the thrill of the Runebound board game system
-4. **Custom Dice Creator** - Design your own fate with customizable dice faces
+3. **Custom Dice Creator** - Design your own fate with customizable dice faces
+4. **Runebound Adventure** - Experience the thrill of the Runebound board game system
 
 🔍 **Deep Statistical Insights**
 - Real-time tracking of probabilities
@@ -325,7 +325,7 @@ The Runebound dice module implements a specialized board game system with intera
    - Environment-aware settings
 
 ### File Organization
-
+```
 project_root/
  ├── project.py # Main application entry point
  ├── test_project.py # Test suite 
@@ -346,22 +346,23 @@ project_root/
       ├── custom_dice_dialog.py # Custom dice creation dialog 
       ├── game_history.py # Game event tracking 
       └── custom_dices.json # Custom dice configurations
-
+```
 
 ## Installation
 1. Clone the repository and switch to the optimization branch:
-
+```
 git clone https://github.com/Vietnoirien/CoinsAndDices.git
 cd CoinsAndDices
 git checkout feature/torch-optimization
+```
 
 2. Install the required packages:
-
+```
 pip install -r requirements.txt
-
+```
 
 ## Usage
 - Launch the application:
-
+```
 python -m project.py
-
+```
