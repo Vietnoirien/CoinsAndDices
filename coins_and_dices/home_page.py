@@ -164,11 +164,3 @@ class HomePage(wx.Frame):
         """
         self.Close()
 
-    def __del__(self) -> None:
-        """
-        Destructor to ensure proper cleanup of resources.
-        Destroys the panel before calling the parent destructor.
-        """
-        if hasattr(self, 'panel'):
-            self.panel.Destroy()
-        super().__del__()

@@ -104,41 +104,47 @@ class CustomDiceDialog(wx.Dialog):
         btn_sizer.Add(ok_btn, 0, wx.ALL, 5)
         btn_sizer.Add(cancel_btn, 0, wx.ALL, 5)
         return btn_sizer
-
+    
     def update_faces_inputs(self, num_faces: int) -> None:
-        """Update the face input controls based on the number of faces.
-        
+        """
+        Update the face input controls based on the number of faces.
+    
         Args:
             num_faces: Number of faces to create inputs for
         """
+        # Store current values before cleanup
         current_values = [ctrl.GetValue() for ctrl in self.values_ctrls]
-        
-        # Update persistent storage
+    
+        # Update stored values array
         if len(current_values) > len(self.stored_values):
             self.stored_values.extend(current_values[len(self.stored_values):])
         else:
             for i, value in enumerate(current_values):
                 if i < len(self.stored_values):
                     self.stored_values[i] = value
-        
+    
+        # Clear existing controls
         self.cleanup()
-        
+    
+        # Create new face inputs
         for i in range(num_faces):
             face_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            face_label = wx.StaticText(self.panel, label=f"{self.LABEL_FACE} {i+1}:")
+            face_label = wx.StaticText(self.panel, label=f"Face {i+1}:")
             ctrl = wx.TextCtrl(self.panel)
-            
+        
+            # Restore previous value if available
             if i < len(self.stored_values):
                 ctrl.SetValue(self.stored_values[i])
-                
+            
             self.values_ctrls.append(ctrl)
             face_sizer.Add(face_label, 0, wx.ALL|wx.CENTER, 5)
             face_sizer.Add(ctrl, 1, wx.ALL|wx.EXPAND, 5)
             self.values_sizer.Add(face_sizer, 0, wx.EXPAND)
-        
+    
+        # Refresh layout
         self.panel.Layout()
         self.scroll_panel.FitInside()
-
+        
     def on_faces_changed(self, event: wx.SpinEvent) -> None:
         """Handle changes to the number of faces.
         
@@ -194,6 +200,7 @@ class CustomDiceDialog(wx.Dialog):
             'faces': [ctrl.GetValue().strip() for ctrl in self.values_ctrls]
         }
 
-    def __del__(self) -> None:
-        """Clean up resources when the dialog is destroyed."""
-        self.faces_ctrl.Unbind(wx.EVT_SPINCTRL)
+    def exit_cleanup(self):
+        """Clean up resources before dialog destruction"""
+        if hasattr(self, 'faces_ctrl') and self.faces_ctrl:
+            self.faces_ctrl.Unbind(wx.EVT_SPINCTRL)

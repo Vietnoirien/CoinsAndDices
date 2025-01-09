@@ -63,10 +63,10 @@ class StatsFrame(wx.Frame):
         stats_text: str = (
             f"=== Statistiques de jeu ===\n\n"
             f"Total des lancers: {report['total_games']}\n"
-            f"Lancers de dés: {report['games_by_type']['dice']}\n"
+            f"Lancers de dés: {report['games_by_type']['standard_dice']}\n"
+            f"Lancers dés personnalisés: {report['games_by_type']['custom_dice']}\n\n"
             f"Lancers de pièces: {report['games_by_type']['coin']}\n"
             f"Lancers Runebound: {report['games_by_type']['runebound']}\n"
-            f"Lancers dés personnalisés: {report['games_by_type']['custom_dice']}\n\n"
             f"Durée de la session: {report['session_duration']} minutes\n\n"
             f"=== Performances ===\n"
             f"Victoires: {report['win_loss_ratio']['wins']}\n"

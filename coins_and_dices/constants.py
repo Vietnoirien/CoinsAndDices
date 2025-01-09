@@ -15,11 +15,25 @@ TITLE_PADDING: int = 20
 BUTTON_PADDING: int = 10
 DESCRIPTION_PADDING: int = 5
 
+
 # Adding new constants for CustomDiceFrame
 CUSTOM_DICE_FRAME_SIZE: Tuple[int, int] = (800, 600)
 CUSTOM_DICE_RESULT_AREA_SIZE: Tuple[int, int] = (700, 400)
 CUSTOM_DICE_MAX_COUNT: int = 100
 CUSTOM_DICE_MIN_COUNT: int = 1
+
+# Adding new constants for StandardDiceFrame
+MAX_DICE: int = CUSTOM_DICE_MAX_COUNT
+MAX_SIDES: int = 1000
+MAX_ROLLS_PER_LINE: int = 30
+GRID_COLUMNS = {
+    'NOTATION': 0,
+    'DETAILS': 1,
+    'TOTAL': 2,
+    'AVERAGE': 3,
+    'MINMAX': 4
+}
+ 
 
 # Add these new constants for Runebound_frame
 RUNEBOUND_FRAME_SIZE: Tuple[int, int] = (800, 600)

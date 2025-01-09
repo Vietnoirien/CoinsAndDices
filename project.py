@@ -28,7 +28,7 @@ def calculate_odds(event_type, parameters):
     Returns:
         float: Probability of the specified event
     """
-    if event_type == 'dice':
+    if event_type == 'standard_dice':
         target = parameters.get('target')
         sides = parameters.get('sides', 6)
         return target/sides
@@ -47,7 +47,7 @@ def generate_game_report(session_data):
     report = {
         'total_games': len(session_data),
         'games_by_type': {
-            'dice': sum(1 for game in session_data if game['game_type'] == 'dice'),
+            'standard_dice': sum(1 for game in session_data if game['game_type'] == 'standard_dice'),
             'coin': sum(1 for game in session_data if game['game_type'] == 'coin'),
             'runebound': sum(1 for game in session_data if game['game_type'] == 'runebound'),
             'custom_dice': sum(1 for game in session_data if game['game_type'] == 'custom_dice')
@@ -126,7 +126,7 @@ def get_most_played_game(session_data):
     """
     Determine most frequently played game type
     """
-    game_counts = {'dice': 0, 'custom_dice': 0, 'coin': 0, 'runebound': 0}
+    game_counts = {'standard_dice': 0, 'custom_dice': 0, 'coin': 0, 'runebound': 0}
     for game in session_data:
         game_counts[game['game_type']] += 1
     

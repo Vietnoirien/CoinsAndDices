@@ -265,3 +265,89 @@ class CustomDiceFrame(wx.Frame):
             self._refresh_dice_list()
         except IOError as e:
             wx.MessageBox(f"Error saving dices: {str(e)}", "Error", wx.OK | wx.ICON_ERROR)
+
+    def _handle_new_dice_dialog(self, dialog: CustomDiceDialog) -> None:
+        """
+        Handle the creation of a new custom dice from dialog input.
+        
+        Args:
+            dialog: The CustomDiceDialog instance containing new dice data
+        """
+        if dialog.ShowModal() == wx.ID_OK:
+            dice_data = dialog.get_values()
+            self.save_custom_dice(dice_data['name'], dice_data['faces'])
+            self._refresh_dice_list(dice_data['name'])
+
+    def _show_delete_confirmation(self, dice_name: str) -> bool:
+        """
+        Display a confirmation dialog for dice deletion.
+        
+        Args:
+            dice_name: Name of the dice to be deleted
+            
+        Returns:
+            bool: True if user confirms deletion, False otherwise
+        """
+        message = f"Êtes-vous sûr de vouloir supprimer le dé '{dice_name}' ?"
+        dialog = wx.MessageDialog(
+            self,
+            message,
+            "Confirmation de suppression",
+            wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION
+        )
+        result = dialog.ShowModal()
+        dialog.Destroy()
+        return result == wx.ID_YES
+
+    def _delete_dice(self, dice_name: str) -> None:
+        """
+        Delete a custom dice configuration.
+        
+        Args:
+            dice_name: Name of the dice to delete
+        """
+        if dice_name in self.custom_dices:
+            del self.custom_dices[dice_name]
+            self._save_custom_dices()
+
+    def _create_edit_dialog(self, dice_name: str) -> CustomDiceDialog:
+        """
+        Create a dialog for editing an existing custom dice.
+        
+        Args:
+            dice_name: Name of the dice to edit
+            
+        Returns:
+            CustomDiceDialog: Dialog pre-filled with existing dice data
+        """
+        dialog = CustomDiceDialog(self)
+        
+        # Pre-fill with existing data
+        dice_data = self.custom_dices[dice_name]
+        dialog.name_ctrl.SetValue(dice_name)
+        dialog.faces_ctrl.SetValue(dice_data['faces'])
+        
+        # Update face fields with existing values
+        dialog.update_faces_inputs(dice_data['faces'])
+        for ctrl, value in zip(dialog.values_ctrls, dice_data['values']):
+            ctrl.SetValue(value)
+            
+        return dialog
+
+    def _update_dice_data(self, dice_name: str, new_data: Dict[str, Any]) -> None:
+        """
+        Update an existing custom dice data.
+        
+        Args:
+            dice_name: Name of the dice to update
+            new_data: New dice data containing name and faces
+        """
+        # If name changed, remove old entry
+        if new_data['name'] != dice_name:
+            del self.custom_dices[dice_name]
+            
+        # Save with new data
+        self.save_custom_dice(new_data['name'], new_data['faces'])
+        
+        # Refresh list with new name selected
+        self._refresh_dice_list(new_data['name'])

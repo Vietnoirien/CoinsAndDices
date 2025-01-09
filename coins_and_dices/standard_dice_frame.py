@@ -4,25 +4,12 @@ import wx
 import wx.grid
 import random
 import re
-from .constants import CUSTOM_DICE_FRAME_SIZE, CUSTOM_DICE_MAX_COUNT
+from .constants import CUSTOM_DICE_FRAME_SIZE, CUSTOM_DICE_MAX_COUNT, MAX_DICE, MAX_SIDES, MAX_ROLLS_PER_LINE, GRID_COLUMNS
 
 class StandardDiceFrame(wx.Frame):
     """A frame for rolling and displaying standard dice results."""
     
-    # Grid column indices
-    GRID_COLUMNS = {
-        'NOTATION': 0,
-        'DETAILS': 1,
-        'TOTAL': 2,
-        'AVERAGE': 3,
-        'MINMAX': 4
-    }
-    
-    # Dice constraints
-    MAX_DICE: int = CUSTOM_DICE_MAX_COUNT
-    MAX_SIDES: int = 1000
-    MAX_ROLLS_PER_LINE: int = 30
-
+   
     def __init__(self) -> None:
         """Initialize the StandardDiceFrame with UI components."""
         super().__init__(
@@ -63,14 +50,14 @@ class StandardDiceFrame(wx.Frame):
     def setup_grid(self) -> None:
         """Setup the results grid with appropriate columns and formatting."""
         self.grid = wx.grid.Grid(self.panel)
-        self.grid.CreateGrid(0, len(self.GRID_COLUMNS))
+        self.grid.CreateGrid(0, len(GRID_COLUMNS))
         
         column_labels = {
-            self.GRID_COLUMNS['NOTATION']: "Notation",
-            self.GRID_COLUMNS['DETAILS']: "Détails des lancers",
-            self.GRID_COLUMNS['TOTAL']: "Total",
-            self.GRID_COLUMNS['AVERAGE']: "Moyenne",
-            self.GRID_COLUMNS['MINMAX']: "Min/Max"
+            GRID_COLUMNS['NOTATION']: "Notation",
+            GRID_COLUMNS['DETAILS']: "Détails des lancers",
+            GRID_COLUMNS['TOTAL']: "Total",
+            GRID_COLUMNS['AVERAGE']: "Moyenne",
+            GRID_COLUMNS['MINMAX']: "Min/Max"
         }
         
         for col, label in column_labels.items():
@@ -88,8 +75,8 @@ class StandardDiceFrame(wx.Frame):
             Formatted string representation of rolls
         """
         formatted_lines = []
-        for i in range(0, len(rolls), self.MAX_ROLLS_PER_LINE):
-            chunk = rolls[i:i + self.MAX_ROLLS_PER_LINE]
+        for i in range(0, len(rolls), MAX_ROLLS_PER_LINE):
+            chunk = rolls[i:i + MAX_ROLLS_PER_LINE]
             formatted_lines.append(str(chunk))
         return '\n'.join(formatted_lines)
 
@@ -107,8 +94,8 @@ class StandardDiceFrame(wx.Frame):
         if not re.match(r'^\d+d\d+$', notation.lower()):
             return False
         num_dice, sides = self.parse_dice_notation(notation)
-        return (0 < num_dice <= self.MAX_DICE and 
-                0 < sides <= self.MAX_SIDES)
+        return (0 < num_dice <= MAX_DICE and 
+                0 < sides <= MAX_SIDES)
 
     def parse_dice_notation(self, notation: str) -> Optional[Tuple[int, int]]:
         """Parse the dice notation into number of dice and sides.
@@ -175,14 +162,14 @@ class StandardDiceFrame(wx.Frame):
                     
                     formatted_rolls = self.format_rolls_display(rolls)
                     
-                    self.grid.SetCellValue(i, self.GRID_COLUMNS['NOTATION'], notation)
-                    self.grid.SetCellValue(i, self.GRID_COLUMNS['DETAILS'], formatted_rolls)
-                    self.grid.SetCellValue(i, self.GRID_COLUMNS['TOTAL'], str(total))
-                    self.grid.SetCellValue(i, self.GRID_COLUMNS['AVERAGE'], f"{average:.2f}")
-                    self.grid.SetCellValue(i, self.GRID_COLUMNS['MINMAX'],
+                    self.grid.SetCellValue(i, GRID_COLUMNS['NOTATION'], notation)
+                    self.grid.SetCellValue(i, GRID_COLUMNS['DETAILS'], formatted_rolls)
+                    self.grid.SetCellValue(i, GRID_COLUMNS['TOTAL'], str(total))
+                    self.grid.SetCellValue(i, GRID_COLUMNS['AVERAGE'], f"{average:.2f}")
+                    self.grid.SetCellValue(i, GRID_COLUMNS['MINMAX'],
                                          f"Min: {min(rolls)} | Max: {max(rolls)}")
                     
-                    self.grid.SetCellSize(i, self.GRID_COLUMNS['DETAILS'], 1, 1)
+                    self.grid.SetCellSize(i, GRID_COLUMNS['DETAILS'], 1, 1)
                     attr = wx.grid.GridCellAttr()
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
                     attr.SetReadOnly(True)
