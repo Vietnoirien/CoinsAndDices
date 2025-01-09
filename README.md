@@ -1,57 +1,178 @@
-# CoinsAndDices
+# 🎲 CoinsAndDices: Where Chance Meets Innovation
 
-A comprehensive Python application for simulating various dice games and coin flips, featuring an intuitive wxPython GUI with specialized frames for different game mechanics.
+> "Fortune favors the prepared mind" - Louis Pasteur
+
+Dive into the fascinating world of probability with CoinsAndDices, a state-of-the-art simulation platform that brings ancient games of chance into the digital age. Powered by cutting-edge GPU acceleration and an elegant interface, this Python masterpiece transforms simple probability into an engaging experience.
+
+## ✨ What Makes It Special
+
+🚀 **Lightning-Fast Performance**
+- Harness the power of CUDA-enabled GPUs to simulate up to 10 million coin flips in seconds
+- Optimized algorithms that make probability calculations feel like magic
+
+🎮 **Four Unique Gaming Experiences**
+1. **Coin Master** - Push the boundaries with millions of simultaneous coin flips
+2. **Dice Virtuoso** - Master the classic dice notation with stunning visualizations
+3. **Runebound Adventure** - Experience the thrill of the Runebound board game system
+4. **Custom Dice Creator** - Design your own fate with customizable dice faces
+
+🔍 **Deep Statistical Insights**
+- Real-time tracking of probabilities
+- Beautiful data visualizations
+- Comprehensive statistical analysis at your fingertips
+
+## 🌟 Perfect For
+
+- 📚 **Students** exploring probability and statistics
+- 🎲 **Game Masters** seeking a reliable digital companion
+- 🔬 **Data Scientists** analyzing random distributions
+- 🎮 **Board Game Enthusiasts** enhancing their gaming experience
+
+## 💫 Features That Amaze
+
+- **Intelligent Display Systems** that handle millions of results with grace
+- **Stunning Visual Feedback** with color-coded status indicators
+- **Persistent History Tracking** to analyze your probability journey
+- **Seamless GPU Integration** for mind-bending performance
+
+## 🚀 Ready to Roll?
+
+Transform your understanding of probability with CoinsAndDices. Whether you're a casual gamer or a serious statistician, our platform offers the perfect blend of power and elegance.
+
+[Get Started Now](#installation)
+
+---
+
+*CoinsAndDices: Where every roll tells a story, and every flip writes history.*
 
 ## Detailed Components
 
-### 1. Coin Simulation (CoinFrame)
-- GPU-accelerated coin flipping using PyTorch
-- Supports up to 10 million coins per flip
-- Advanced display strategies:
-  - Virtual mode for datasets > 1M flips with "Show All" capability
-  - Progressive loading with progress tracking
-  - Direct display for small datasets
-  - Full sequence viewing with memory-efficient loading
-- Real-time statistical tracking:
-  - Individual flip results (Heads/Tails)
-  - Running totals and percentages
-  - Formatted sequence display with configurable items per line
-- Performance optimizations:
-  - Batched processing (10,000 coins per batch)
-  - Memory-efficient result handling
-  - Throttled UI updates (100ms interval)
-  - Progress tracking for large operations
-- Hardware acceleration features:
-  - CUDA GPU support when available
-  - Automatic CPU fallback
-  - Batch size optimization
-  - Memory-efficient processing
+## 🎲 Coin Simulation Deep Dive
 
-### 2. Standard Dice (StandardDiceFrame)
-- Full support for standard dice notation (e.g., "2d6", "3d1e6")
-- Advanced display modes:
-  - Full Mode: Complete detailed results with progressive loading
-  - Sample Mode: Representative sample with summary
-  - Statistics Mode: Comprehensive statistical analysis
-  - Virtual mode for large datasets with full view option
-- Performance features:
-  - Virtual display mode for >1M results
-  - Progressive loading with progress tracking
-  - Optimized batch processing (10,000 dice per batch)
-  - Memory-efficient result handling
-- Statistical Analysis:
-  - Individual roll results
-  - Sum totals
-  - Mean and median
-  - Standard deviation
-  - Min/Max values
-- Display optimizations:
-  - Batched updates with progress indication
-  - Throttled UI refresh (100ms interval)
-  - Adaptive display modes
-  - Full sequence access for any dataset size
+### Architecture Overview
 
-### 3. Runebound Game System (RuneboundFrame)
+The coin simulation module leverages PyTorch's GPU acceleration to deliver exceptional performance while maintaining memory efficiency. Here's how it works:
+
+#### Core Components
+1. **GPU-Accelerated Engine**
+  - PyTorch tensor operations for parallel coin flips
+  - Automatic device selection (CUDA/CPU)
+  - Batch processing of 1M flips per iteration
+
+2. **Adaptive Display System**
+  - Virtual mode for datasets > 1M flips
+  - Progressive loading with 10K batch updates
+  - Memory-efficient sequence formatting
+  - Real-time statistical tracking
+
+3. **Performance Optimizations**
+  - 100ms throttled UI updates
+  - Batched result processing
+  - Lazy loading for large datasets
+  - Efficient memory management
+
+#### Key Features
+
+1. **Smart Display Modes**
+  - Quick view: Summary with first/last 1000 results
+  - Full view: Complete sequence with progress tracking
+  - Virtual mode: For datasets exceeding 1M flips
+
+2. **Real-time Statistics**
+  - Running totals for heads/tails
+  - Percentage calculations
+  - Sequence formatting (15-30 items per line)
+
+3. **Progress Tracking**
+  - Visual progress bars for large operations
+  - Time remaining estimates
+  - Cancellable operations
+
+4. **Memory Management**
+  - Efficient result storage
+  - Batch processing to prevent memory overflow
+  - Garbage collection optimization
+
+#### Technical Specifications
+
+- Maximum coins: 10 million per simulation
+- Batch size: 1 million for GPU processing
+- Update interval: 100ms for UI refresh
+- Display threshold: 1M results for virtual mode
+- Sample size: 1000 results for quick view
+
+## 🎲 Standard Dice Deep Dive
+
+### Architecture Overview
+
+The standard dice module combines powerful GPU computation with flexible dice notation parsing to create a versatile and high-performance dice rolling system.
+
+#### Core Components
+1. **Advanced Dice Engine**
+  - Support for standard (XdY) and scientific notation
+  - Multi-dice batch processing
+  - Parallel GPU computation for massive rolls
+  - Automatic float/int handling for large numbers
+
+2. **Multi-Mode Display System**
+  - Full Mode: Complete result visualization
+  - Sample Mode: Statistical sampling for large datasets
+  - Statistics Mode: Comprehensive analysis view
+  - Virtual mode with progressive loading
+
+3. **Performance Architecture**
+  - Batch processing (10K dice per iteration)
+  - Memory-efficient result handling
+  - Throttled display updates
+  - Dynamic UI scaling
+
+#### Key Features
+
+1. **Intelligent Display Modes**
+  - Full sequence viewing with progress tracking
+  - Statistical sampling for massive datasets
+  - Real-time calculation updates
+  - Adaptive formatting based on result size
+
+2. **Statistical Analysis**
+  - Sum totals and averages
+  - Standard deviation calculation
+  - Min/Max tracking
+  - Distribution analysis
+
+3. **Progress Management**
+  - Visual progress indication
+  - Batch-based updates
+  - Cancellable operations
+  - Memory usage optimization
+
+4. **Export Capabilities**
+  - CSV export for large datasets
+  - Formatted result saving
+  - Statistical summary export
+  - Raw data extraction
+
+#### Technical Specifications
+
+- Maximum dice: 1 million per roll
+- Maximum sides: 1 billion (scientific notation)
+- Batch size: 10,000 for GPU processing
+- Display threshold: 10,000 results for virtual mode
+- Update interval: 100ms for UI refresh
+
+### 3. Custom Dice System (CustomDiceFrame)
+- Complete custom dice creation and management:
+  - Persistent storage of custom dice configurations
+  - JSON-based saving/loading system
+  - Dynamic face value configuration
+- Features:
+  - Create/Edit/Delete custom dice
+  - Multiple dice rolls (1-100 per roll)
+  - Custom face values and probabilities
+  - Result history tracking
+  - Detailed roll statistics
+  
+### 4. Runebound Game System (RuneboundFrame)
 - Specialized implementation of Runebound board game dice mechanics
 - Features:
   - Custom face values and symbols
@@ -65,18 +186,6 @@ A comprehensive Python application for simulating various dice games and coin fl
     - Green: Selected faces
     - Blue: Available rerolls
     - Grey: Used rerolls
-
-### 4. Custom Dice System (CustomDiceFrame)
-- Complete custom dice creation and management:
-  - Persistent storage of custom dice configurations
-  - JSON-based saving/loading system
-  - Dynamic face value configuration
-- Features:
-  - Create/Edit/Delete custom dice
-  - Multiple dice rolls (1-100 per roll)
-  - Custom face values and probabilities
-  - Result history tracking
-  - Detailed roll statistics
 
 ### Supporting Systems
 
@@ -109,7 +218,7 @@ A comprehensive Python application for simulating various dice games and coin fl
 - Result display: 15-30 items per line (configurable)
 
 ### File Organization
-```
+
 project_root/
  ├── project.py # Main application entry point
  ├── test_project.py # Test suite 
@@ -130,23 +239,22 @@ project_root/
       ├── custom_dice_dialog.py # Custom dice creation dialog 
       ├── game_history.py # Game event tracking 
       └── custom_dices.json # Custom dice configurations
-```
+
 
 ## Installation
 1. Clone the repository and switch to the optimization branch:
-```
+
 git clone https://github.com/Vietnoirien/CoinsAndDices.git
 cd CoinsAndDices
 git checkout feature/torch-optimization
-```
+
 2. Install the required packages:
-```
+
 pip install -r requirements.txt
-```
+
 
 ## Usage
 - Launch the application:
-```
+
 python -m project.py
-```
 

@@ -24,7 +24,7 @@ COIN_MIN_COUNT: int = 1
 # Adding new constants for CustomDiceFrame
 CUSTOM_DICE_FRAME_SIZE: Tuple[int, int] = (800, 600)
 CUSTOM_DICE_RESULT_AREA_SIZE: Tuple[int, int] = (700, 400)
-CUSTOM_DICE_MAX_COUNT: int = 100
+CUSTOM_DICE_MAX_COUNT: int = 1_000_000
 CUSTOM_DICE_MIN_COUNT: int = 1
 
 # Standard Dice Constants
