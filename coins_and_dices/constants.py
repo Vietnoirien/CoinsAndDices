@@ -54,7 +54,7 @@ RUNEBOUND_FACES: List[List[str]] = [
 
 # Coin display constants
 ITEMS_PER_LINE: int = 12
-BATCH_SIZE: int = 5_000_000  # Increased for better GPU utilization
+BATCH_SIZE: int = 1_000_000  # Increased for better GPU utilization
 COIN_UPDATE_INTERVAL: float = 0.1  # seconds
 COIN_VIRTUAL_THRESHOLD: int = 1_000_000
 COIN_BATCH_DISPLAY: int = 10_000
