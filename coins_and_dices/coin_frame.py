@@ -184,6 +184,7 @@ class CoinFrame(wx.Frame):
             
             wx.CallAfter(lambda: self.grid.SetCellValue(row, 1, new_value))
             wx.CallAfter(lambda: self.grid.AutoSizeRow(row))
+            wx.CallAfter(lambda: self.grid.AutoSizeColumn(1))  # Auto-size the details column
             wx.WakeUpIdle()
 
         # Virtual mode check
@@ -284,6 +285,12 @@ class CoinFrame(wx.Frame):
                 f"Ratio P/F: {piles/faces:.3f}")
             self.grid.AutoSizeColumns()
             self.grid.AutoSizeRows()
+
+            for col in range(len(GRID_COLUMNS)):
+                self.grid.SetColSize(col, self.grid.GetColSize(col) + 10)  # Add padding
+
+            # Ensure the grid uses available space
+            self.grid.ForceRefresh()
         
             # Track history
             metadata = {
