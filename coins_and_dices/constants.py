@@ -15,7 +15,7 @@ TITLE_PADDING: int = 20
 BUTTON_PADDING: int = 10
 DESCRIPTION_PADDING: int = 5
 
-# Dice constants
+# Coin constants
 BATCH_SIZE: int = 1_000_000
 ITEMS_PER_LINE: int = 15
 COIN_MAX_COUNT: int = 10_000_000
