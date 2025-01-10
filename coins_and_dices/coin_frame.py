@@ -147,38 +147,41 @@ class CoinFrame(wx.Frame):
                 f"Last {sample_size} results:\n"
                 f"{' → '.join(data[-sample_size:])}"
             )
-    
-        def update_cell(batch: List[str], is_first: bool = False) -> None:
+
+        def update_cell(start_idx: int, end_idx: int, is_first: bool = False) -> None:
+            batch = results[start_idx:end_idx]
             if is_first:
                 new_value = ' → '.join(batch)
             else:
                 current_value = self.grid.GetCellValue(row, 1)
-                new_value = (current_value + " → " + ' → '.join(batch)).strip()
+                new_value = f"{current_value} → {' → '.join(batch)}"
+            
             wx.CallAfter(lambda: self.grid.SetCellValue(row, 1, new_value))
             wx.CallAfter(lambda: self.grid.AutoSizeRow(row))
             wx.WakeUpIdle()
 
-        # Vérification du mode virtuel
+        # Virtual mode check
         if len(results) > virtual_threshold:
             virtual_display = create_virtual_display(results)
             wx.CallAfter(self.grid.SetCellValue, row, 1, virtual_display)
             return
 
-        # Affichage progressif
+        # Progressive display with proper sequencing
         update_interval = 0.1
         last_update = time.time()
-    
-        # Premier lot
-        first_batch = results[:batch_size]
-        update_cell(first_batch, True)
-    
-        # Lots suivants
-        for i in range(batch_size, len(results), batch_size):
+        
+        # First batch
+        update_cell(0, batch_size, True)
+        
+        # Subsequent batches
+        for start_idx in range(batch_size, len(results), batch_size):
             current_time = time.time()
             if current_time - last_update >= update_interval:
-                batch = results[i:i + batch_size]
-                update_cell(batch)
+                end_idx = min(start_idx + batch_size, len(results))
+                update_cell(start_idx, end_idx)
                 last_update = current_time
+                time.sleep(0.01)  # Small delay to prevent UI freezing    
+    
     def generate_statistical_summary(self, results: List[str]) -> str:
         """Generate a comprehensive statistical summary of flip results.
         
