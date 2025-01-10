@@ -130,7 +130,6 @@ class CoinFrame(wx.Frame):
             remaining -= batch_size
             
         return results
-    
     def display_results_progressively(
         self,
         results: List[str],
@@ -142,10 +141,10 @@ class CoinFrame(wx.Frame):
         def create_virtual_display(data: List[str], sample_size: int = 1000) -> str:
             # Format first chunk
             first_chunk = [' → '.join(data[i:i+values_per_line]) 
-                         for i in range(0, min(sample_size, len(data)), values_per_line)]
+                                for i in range(0, min(sample_size, len(data)), values_per_line)]
             # Format last chunk
             last_chunk = [' → '.join(data[i:i+values_per_line]) 
-                         for i in range(max(len(data)-sample_size, 0), len(data), values_per_line)]
+                                for i in range(max(len(data)-sample_size, 0), len(data), values_per_line)]
             
             return (
                 f"Total flips: {len(data):,}\n\n"
@@ -156,59 +155,49 @@ class CoinFrame(wx.Frame):
                 f"\n".join(last_chunk)
             )
 
-        def update_cell(start_idx: int, end_idx: int, is_first: bool = False) -> None:
-            batch = results[start_idx:end_idx]
-            # Split into chunks of values_per_line
-            chunks = [batch[i:i+values_per_line] for i in range(0, len(batch), values_per_line)]
-            formatted_chunks = [' → '.join(chunk) for chunk in chunks]
-            
-            if is_first:
-                new_value = '\n'.join(formatted_chunks)
-            else:
-                current_value = self.grid.GetCellValue(row, 1)
-                last_line = current_value.split('\n')[-1]
-                
-                # Check if last line needs continuation or new line
-                current_count = last_line.count('→') + 1
-                if current_count < values_per_line and chunks:
-                    # Continue current line
-                    new_chunks = chunks[1:]  # Rest of chunks
-                    new_value = (
-                        current_value.rsplit('\n', 1)[0] + '\n' +  # Previous lines
-                        last_line + ' → ' + ' → '.join(chunks[0]) +  # Complete current line
-                        ('\n' + '\n'.join([' → '.join(c) for c in new_chunks]) if new_chunks else '')  # New lines
-                    )
-                else:
-                    # Start new line
-                    new_value = current_value + '\n' + '\n'.join(formatted_chunks)
-            
-            wx.CallAfter(lambda: self.grid.SetCellValue(row, 1, new_value))
-            wx.CallAfter(lambda: self.grid.AutoSizeRow(row))
-            wx.CallAfter(lambda: self.grid.AutoSizeColumn(1))  # Auto-size the details column
-            wx.WakeUpIdle()
-
         # Virtual mode check
         if len(results) > virtual_threshold:
             virtual_display = create_virtual_display(results)
             wx.CallAfter(self.grid.SetCellValue, row, 1, virtual_display)
             return
 
-        # Progressive display with proper sequencing
-        update_interval = 0.1
+        self.handle_sequence_display(results, row)
+
+    def handle_sequence_display(self, results: List[str], row: int) -> None:
+        """Efficiently handle large sequence displays with buffering and chunking.
+        
+        Args:
+            results: List of coin flip results
+            row: Grid row to update
+        """
+        buffer = []
         last_update = time.time()
         
-        # First batch
-        update_cell(0, batch_size, True)
+        def flush_buffer():
+            if buffer:
+                formatted = ' → '.join(buffer)
+                current = self.grid.GetCellValue(row, GRID_COLUMNS['DETAILS'])
+                new_value = f"{current}\n{formatted}" if current else formatted
+                wx.CallAfter(self.grid.SetCellValue, row, GRID_COLUMNS['DETAILS'], new_value)
+                wx.CallAfter(self.grid.AutoSizeRow, row)
+                buffer.clear()
         
-        # Subsequent batches
-        for start_idx in range(batch_size, len(results), batch_size):
-            current_time = time.time()
-            if current_time - last_update >= update_interval:
-                end_idx = min(start_idx + batch_size, len(results))
-                update_cell(start_idx, end_idx)
-                last_update = current_time
-                time.sleep(0.01)  # Small delay to prevent UI freezing
-    
+        for i, result in enumerate(results):
+            buffer.append(result)
+            
+            # Flush buffer when full or enough time has passed
+            if (len(buffer) >= ITEMS_PER_LINE or 
+                time.time() - last_update >= SEQUENCE_UPDATE_INTERVAL):
+                flush_buffer()
+                last_update = time.time()
+                
+                # Allow UI to process events
+                wx.YieldIfNeeded()
+                time.sleep(0.001)  # Prevent UI freezing
+                
+        # Flush any remaining results
+        flush_buffer()
+        
     def generate_statistical_summary(self, results: List[str]) -> str:
         """Generate a comprehensive statistical summary of flip results.
         
@@ -238,18 +227,18 @@ class CoinFrame(wx.Frame):
         """
         selected_mode = self.view_mode.GetString(self.view_mode.GetSelection())
         
-        if selected_mode == "Statistics":
+        if selected_mode == ViewMode.FULL.value:
+            self.handle_sequence_display(results, row)
+        elif selected_mode == ViewMode.STATISTICS.value:
             self.grid.SetCellValue(row, 1, self.generate_statistical_summary(results))
-        elif selected_mode == "Sample":
-            sample_size = min(1000, len(results))
+        else:  # Sample mode
+            sample_size = min(COIN_SAMPLE_SIZE, len(results))
             sample_display = (
                 f"Sample of first {sample_size} results:\n" +
                 ' → '.join(results[:sample_size]) +
                 f"\n... and {len(results) - sample_size} more results"
             )
             self.grid.SetCellValue(row, 1, sample_display)
-        else:  # "Full" mode
-            self.display_results_progressively(results, row)
 
     def handle_flip_coins(self, event: wx.CommandEvent) -> None:
         """Handle the coin flip button click event with enhanced display handling.
@@ -269,9 +258,6 @@ class CoinFrame(wx.Frame):
             # Colonne NOTATION
             self.grid.SetCellValue(0, GRID_COLUMNS['NOTATION'], f"{num_coins} pièces")
 
-            # Colonne DETAILS - déjà géré par update_display()
-            self.update_display(results, 0)
-
             # Colonne TOTAL
             self.grid.SetCellValue(0, GRID_COLUMNS['TOTAL'], 
                 f"Pile: {piles}\nFace: {faces}")
@@ -285,6 +271,9 @@ class CoinFrame(wx.Frame):
                 f"Ratio P/F: {piles/faces:.3f}")
             self.grid.AutoSizeColumns()
             self.grid.AutoSizeRows()
+
+            # Colonne DETAILS - déjà géré par update_display()
+            self.update_display(results, 0)
 
             for col in range(len(GRID_COLUMNS)):
                 self.grid.SetColSize(col, self.grid.GetColSize(col) + 10)  # Add padding

@@ -57,8 +57,8 @@ ITEMS_PER_LINE: int = 12
 BATCH_SIZE: int = 5_000_000  # Increased for better GPU utilization
 COIN_UPDATE_INTERVAL: float = 0.1  # seconds
 COIN_VIRTUAL_THRESHOLD: int = 1_000_000
-COIN_BATCH_DISPLAY: int = 50000
-COIN_BATCH_SIZE: int = 100000
+COIN_BATCH_DISPLAY: int = 10_000
+COIN_BATCH_SIZE: int = 100_000
 COIN_SAMPLE_SIZE: int = 1000
 COIN_CACHE_SIZE: int = 1_000_000  # Results caching threshold
 WORKER_THREAD_SLEEP: float = 0.01  # Thread sleep interval
@@ -67,3 +67,8 @@ WORKER_THREAD_SLEEP: float = 0.01  # Thread sleep interval
 COIN_MAX_COUNT: int = 10_000_000  # Maximum number of coins
 COIN_MIN_COUNT: int = 1  # Minimum number of coins
 COIN_PROGRESS_UPDATE: int = 100  # Progress dialog update interval
+
+# Sequence optimization constants
+SEQUENCE_BATCH_SIZE: int = 50000  # Process results in smaller chunks
+DISPLAY_BUFFER_SIZE: int = 1000   # Number of results to buffer before updating UI
+SEQUENCE_UPDATE_INTERVAL: float = 0.05  # Seconds between UI updates
