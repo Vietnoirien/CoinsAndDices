@@ -15,12 +15,6 @@ TITLE_PADDING: int = 20
 BUTTON_PADDING: int = 10
 DESCRIPTION_PADDING: int = 5
 
-# Coin constants
-BATCH_SIZE: int = 1_000_000
-ITEMS_PER_LINE: int = 15
-COIN_MAX_COUNT: int = 10_000_000
-COIN_MIN_COUNT: int = 1
-
 # Adding new constants for CustomDiceFrame
 CUSTOM_DICE_FRAME_SIZE: Tuple[int, int] = (800, 600)
 CUSTOM_DICE_RESULT_AREA_SIZE: Tuple[int, int] = (700, 400)
@@ -59,7 +53,17 @@ RUNEBOUND_FACES: List[List[str]] = [
 ]
 
 # Coin display constants
-COIN_VIRTUAL_THRESHOLD: int = 1_000_000
-COIN_BATCH_SIZE: int = 10000
-COIN_SAMPLE_SIZE: int = 1000
+ITEMS_PER_LINE: int = 15
+BATCH_SIZE: int = 5_000_000  # Increased for better GPU utilization
 COIN_UPDATE_INTERVAL: float = 0.1  # seconds
+COIN_VIRTUAL_THRESHOLD: int = 1_000_000
+COIN_BATCH_DISPLAY: int = 50000
+COIN_BATCH_SIZE: int = 100000
+COIN_SAMPLE_SIZE: int = 1000
+COIN_CACHE_SIZE: int = 1_000_000  # Results caching threshold
+WORKER_THREAD_SLEEP: float = 0.01  # Thread sleep interval
+
+# Add these performance-related constants
+COIN_MAX_COUNT: int = 10_000_000  # Maximum number of coins
+COIN_MIN_COUNT: int = 1  # Minimum number of coins
+COIN_PROGRESS_UPDATE: int = 100  # Progress dialog update interval
