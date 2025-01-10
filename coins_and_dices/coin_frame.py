@@ -136,25 +136,51 @@ class CoinFrame(wx.Frame):
         results: List[str],
         row: int,
         batch_size: int = BATCH_SIZE,
-        virtual_threshold: int = COIN_VIRTUAL_THRESHOLD
+        virtual_threshold: int = COIN_VIRTUAL_THRESHOLD,
+        values_per_line: int = ITEMS_PER_LINE
     ) -> None:
         def create_virtual_display(data: List[str], sample_size: int = 1000) -> str:
+            # Format first chunk
+            first_chunk = [' → '.join(data[i:i+values_per_line]) 
+                         for i in range(0, min(sample_size, len(data)), values_per_line)]
+            # Format last chunk
+            last_chunk = [' → '.join(data[i:i+values_per_line]) 
+                         for i in range(max(len(data)-sample_size, 0), len(data), values_per_line)]
+            
             return (
                 f"Total flips: {len(data):,}\n\n"
                 f"First {sample_size} results:\n"
-                f"{' → '.join(data[:sample_size])}\n\n"
+                f"\n".join(first_chunk) + "\n\n"
                 f"[... {len(data) - 2*sample_size:,} flips ...]\n\n"
                 f"Last {sample_size} results:\n"
-                f"{' → '.join(data[-sample_size:])}"
+                f"\n".join(last_chunk)
             )
 
         def update_cell(start_idx: int, end_idx: int, is_first: bool = False) -> None:
             batch = results[start_idx:end_idx]
+            # Split into chunks of values_per_line
+            chunks = [batch[i:i+values_per_line] for i in range(0, len(batch), values_per_line)]
+            formatted_chunks = [' → '.join(chunk) for chunk in chunks]
+            
             if is_first:
-                new_value = ' → '.join(batch)
+                new_value = '\n'.join(formatted_chunks)
             else:
                 current_value = self.grid.GetCellValue(row, 1)
-                new_value = f"{current_value} → {' → '.join(batch)}"
+                last_line = current_value.split('\n')[-1]
+                
+                # Check if last line needs continuation or new line
+                current_count = last_line.count('→') + 1
+                if current_count < values_per_line and chunks:
+                    # Continue current line
+                    new_chunks = chunks[1:]  # Rest of chunks
+                    new_value = (
+                        current_value.rsplit('\n', 1)[0] + '\n' +  # Previous lines
+                        last_line + ' → ' + ' → '.join(chunks[0]) +  # Complete current line
+                        ('\n' + '\n'.join([' → '.join(c) for c in new_chunks]) if new_chunks else '')  # New lines
+                    )
+                else:
+                    # Start new line
+                    new_value = current_value + '\n' + '\n'.join(formatted_chunks)
             
             wx.CallAfter(lambda: self.grid.SetCellValue(row, 1, new_value))
             wx.CallAfter(lambda: self.grid.AutoSizeRow(row))
@@ -180,7 +206,7 @@ class CoinFrame(wx.Frame):
                 end_idx = min(start_idx + batch_size, len(results))
                 update_cell(start_idx, end_idx)
                 last_update = current_time
-                time.sleep(0.01)  # Small delay to prevent UI freezing    
+                time.sleep(0.01)  # Small delay to prevent UI freezing
     
     def generate_statistical_summary(self, results: List[str]) -> str:
         """Generate a comprehensive statistical summary of flip results.
