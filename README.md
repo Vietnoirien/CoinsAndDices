@@ -16,16 +16,10 @@ Dive into the fascinating world of probability with CoinsAndDices, a state-of-th
 3. **Custom Dice Creator** - Design your own fate with customizable dice faces
 4. **Runebound Adventure** - Experience the thrill of the Runebound board game system
 
-🔍 **Deep Statistical Insights**
-- Real-time tracking of probabilities
-- Beautiful data visualizations
-- Comprehensive statistical analysis at your fingertips
-
 ## 🌟 Perfect For
 
 - 📚 **Students** exploring probability and statistics
 - 🎲 **Game Masters** seeking a reliable digital companion
-- 🔬 **Data Scientists** analyzing random distributions
 - 🎮 **Board Game Enthusiasts** enhancing their gaming experience
 
 ## 💫 Features That Amaze
