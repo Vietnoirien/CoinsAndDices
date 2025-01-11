@@ -366,3 +366,18 @@ class CustomDiceFrame(wx.Frame):
         if self.custom_dice_choice.GetSelection() == -1:
             return ""
         return self.custom_dice_choice.GetString(self.custom_dice_choice.GetSelection())
+
+    def _refresh_dice_list(self, select_name: str = "") -> None:
+        """
+        Refresh the custom dice choice control and optionally select a specific dice.
+        
+        Args:
+            select_name: Name of the dice to select after refresh (optional)
+        """
+        self.custom_dice_choice.Clear()
+        self.custom_dice_choice.AppendItems(list(self.custom_dices.keys()))
+        
+        if select_name and select_name in self.custom_dices:
+            self.custom_dice_choice.SetStringSelection(select_name)
+        elif self.custom_dice_choice.GetCount() > 0:
+            self.custom_dice_choice.SetSelection(0)
