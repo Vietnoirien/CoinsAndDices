@@ -162,11 +162,11 @@ class StandardDiceFrame(wx.Frame):
             sample_size: int = 1000
         ) -> str:
             """Create a summarized view for very large datasets.
-        
+
             Args:
                 data: Complete list of roll results
                 sample_size: Number of entries to show at start and end
-            
+        
             Returns:
                 str: Formatted string containing the virtual display summary
             """
@@ -177,8 +177,8 @@ class StandardDiceFrame(wx.Frame):
                 f"[... {len(data) - 2*sample_size:,} entries ...]\n\n"
                 f"Last {sample_size} results:\n"
                 f"{self.format_rolls_display(data[-sample_size:])}"
-            )
-    
+            )    
+        
         def update_cell(
             batch: List[Union[int, float]], 
             is_first: bool = False
@@ -236,6 +236,10 @@ class StandardDiceFrame(wx.Frame):
             rolls: List of dice roll results
             row: Grid row to update
         """
+        # Ensure grid has enough rows
+        if self.grid.GetNumberRows() <= row:
+            self.grid.AppendRows(1)
+
         # Get the selected view mode string directly
         selected_mode = self.view_mode.GetString(self.view_mode.GetSelection())
     
@@ -305,28 +309,15 @@ class StandardDiceFrame(wx.Frame):
         self.grid.AutoSizeColumns()
 
     def roll_dice_gpu(self, number: int, sides: Union[int, float]) -> List[Union[int, float]]:
-        """Generate random dice rolls using GPU acceleration with batch processing.
-        
-        Args:
-            number: Number of dice to roll
-            sides: Number of sides on each die (can be float for large values)
-            
-        Returns:
-            List of roll results
-        """
-        results: List[Union[int, float]] = []
-        remaining: int = number
-        
+        """Generate random dice rolls using GPU acceleration with batch processing."""
+        results = []
+        remaining = number
+    
         while remaining > 0:
-            batch_size: int = min(DICE_BATCH_SIZE, remaining)
-            random_tensor: torch.Tensor = torch.rand(batch_size, device=self.device)
-            scaled_tensor: torch.Tensor = (random_tensor * sides).floor() + 1
-            
-            if sides <= MAX_SIDES:
-                results.extend(scaled_tensor.cpu().int().tolist())
-            else:
-                results.extend(scaled_tensor.cpu().float().tolist())
-                
+            batch_size = min(DICE_BATCH_SIZE, remaining)
+            random_tensor = torch.rand(batch_size, device=self.device)
+            scaled_tensor = (random_tensor * sides).floor() + 1
+            results.extend(scaled_tensor.cpu().tolist())
             remaining -= batch_size
             
         return results
@@ -436,7 +427,10 @@ class StandardDiceFrame(wx.Frame):
         except Exception as e:
             wx.MessageDialog(self, f"Erreur: {str(e)}", "Erreur").ShowModal()
 
-    def __del__(self) -> None:
-        """Cleanup resources when the frame is destroyed."""
-        if hasattr(self, 'grid'):
+def __del__(self) -> None:
+    """Cleanup resources when the frame is destroyed."""
+    if hasattr(self, 'grid') and self.grid:
+        try:
             self.grid.Destroy()
+        except:
+            pass
