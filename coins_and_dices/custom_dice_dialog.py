@@ -188,7 +188,7 @@ class CustomDiceDialog(wx.Dialog):
         """
         if self.validate_inputs():
             event.Skip()
-
+            
     def get_values(self) -> Dict[str, Union[str, List[str]]]:
         """Get the dialog's input values.
         

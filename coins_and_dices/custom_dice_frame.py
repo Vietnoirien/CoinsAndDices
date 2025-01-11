@@ -233,15 +233,25 @@ class CustomDiceFrame(wx.Frame):
     def load_custom_dices(self) -> Dict[str, Dict[str, Union[int, List[str]]]]:
         """Load and validate custom dice configurations from file."""
         try:
-            if os.path.exists(self.CUSTOM_DICES_FILE):
+            # First ensure the directory exists
+            os.makedirs(os.path.dirname(self.CUSTOM_DICES_FILE), exist_ok=True)
+        
+            # Check if file exists and has content
+            if os.path.exists(self.CUSTOM_DICES_FILE) and os.path.getsize(self.CUSTOM_DICES_FILE) > 0:
                 with open(self.CUSTOM_DICES_FILE, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     if not all(isinstance(d, dict) and 'faces' in d and 'values' in d 
                               for d in data.values()):
                         raise ValueError("Invalid dice data structure")
                     return data
-            return {}
-        except (json.JSONDecodeError, ValueError) as e:
+        
+            # Initialize empty file with valid JSON
+            empty_data = {}
+            with open(self.CUSTOM_DICES_FILE, 'w', encoding='utf-8') as f:
+                json.dump(empty_data, f, indent=4)
+            return empty_data
+            
+        except (json.JSONDecodeError, ValueError, IOError) as e:
             wx.MessageBox(f"Error loading dices: {str(e)}", "Error", wx.OK | wx.ICON_ERROR)
             return {}
 
