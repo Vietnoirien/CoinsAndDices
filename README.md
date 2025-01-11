@@ -57,20 +57,19 @@ The coin simulation module leverages PyTorch's GPU acceleration to deliver excep
 1. **GPU-Accelerated Engine**
   - PyTorch tensor operations for parallel coin flips
   - Automatic device selection (CUDA/CPU)
-  - Batch processing of 1M flips per iteration
+  - Batch processing of 100K flips per iteration
 
 2. **Adaptive Display System**
   - Virtual mode for datasets > 1M flips
-  - Progressive loading with 10K batch updates
-  - Memory-efficient sequence formatting
+  - Progressive loading with sequence batching
+  - Memory-efficient sequence formatting (12 items per line)
   - Real-time statistical tracking
 
 3. **Performance Optimizations**
-  - 100ms throttled UI updates
+  - 50ms throttled UI updates
   - Batched result processing
-  - Lazy loading for large datasets
-  - Efficient memory management
-
+  - Three view modes: Full, Sample, Statistics
+  - Efficient memory management with GPU cache clearing
 #### Key Features
 
 1. **Smart Display Modes**
@@ -96,11 +95,11 @@ The coin simulation module leverages PyTorch's GPU acceleration to deliver excep
 #### Technical Specifications
 
 - Maximum coins: 10 million per simulation
-- Batch size: 1 million for GPU processing
-- Update interval: 100ms for UI refresh
+- Batch size: 100,000 for GPU processing
+- Update interval: 50ms for UI refresh
 - Display threshold: 1M results for virtual mode
 - Sample size: 1000 results for quick view
-
+- Items per line: 12
 ## 🎲 Standard Dice Deep Dive
 
 ### Architecture Overview
