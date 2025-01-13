@@ -35,6 +35,8 @@ Transform your understanding of probability with CoinsAndDices. Whether you're a
 
 [Get Started Now](#installation)
 
+[![CoinsAndDices: A Harvard CS50P Final Project](https://img.youtube.com/vi/MWD90OtE2IA/maxresdefault.jpg)](https://www.youtube.com/watch?v=MWD90OtE2IA)
+
 ---
 
 *CoinsAndDices: Where every roll tells a story, and every flip writes history.*
