@@ -354,6 +354,15 @@ git checkout feature/torch-optimization
 pip install -r requirements.txt
 ```
 
+for windows you will need to install the following packages:
+```
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+then install the requirements:
+```
+pip install -r requirements.txt
+```
+
 ## Usage
 - Launch the application:
 ```
